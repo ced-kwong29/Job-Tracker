@@ -48,7 +48,7 @@ public class GmailClientFactory {
                     .setApplicationName(applicationName)
                     .build();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to initialize Gmail service", e);
+            throw new RuntimeException("Failed to connect to Gmail API", e);
         }
 
     }
