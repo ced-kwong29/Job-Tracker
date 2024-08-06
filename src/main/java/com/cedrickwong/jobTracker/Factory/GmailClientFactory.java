@@ -1,4 +1,4 @@
-package com.cedrickwong.jobTracker.factory;
+package com.cedrickwong.jobTracker.Factory;
 
 
 import com.google.api.client.auth.oauth2.Credential;
@@ -12,19 +12,17 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 
-
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.List;
 
 @Configuration
-public class GmailAPIConfig {
+public class GmailClientFactory {
     private static final String applicationName = "JobTracker";
     private static final JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
     private static final String tokens = "tokens";
@@ -32,24 +30,26 @@ public class GmailAPIConfig {
     private static final String credentialsFilePath = "/credentials.json";
 
     @Bean
-    public Gmail getGmailService() throws Exception {
-        InputStream in = GmailAPIConfig.class.getResourceAsStream(credentialsFilePath);
-        if (in == null) {
-            throw new FileNotFoundException("Resource not found: " + credentialsFilePath);
+    public Gmail getGmail() {
+        try {
+            InputStream in = GmailClientFactory.class.getResourceAsStream(credentialsFilePath);
+            GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(jsonFactory, new InputStreamReader(in));
+
+            GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
+                    GoogleNetHttpTransport.newTrustedTransport(), jsonFactory, clientSecrets, scopes)
+                    .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(tokens)))
+                    .setAccessType("offline")
+                    .build();
+
+            LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
+            Credential credential = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+
+            return new Gmail.Builder(GoogleNetHttpTransport.newTrustedTransport(), jsonFactory, credential)
+                    .setApplicationName(applicationName)
+                    .build();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize Gmail service", e);
         }
-        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(jsonFactory, new InputStreamReader(in));
 
-        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-                GoogleNetHttpTransport.newTrustedTransport(), jsonFactory, clientSecrets, scopes)
-                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(tokens)))
-                .setAccessType("offline")
-                .build();
-
-        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
-        Credential credential = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
-
-        return new Gmail.Builder(GoogleNetHttpTransport.newTrustedTransport(), jsonFactory, credential)
-                .setApplicationName(applicationName)
-                .build();
     }
 }

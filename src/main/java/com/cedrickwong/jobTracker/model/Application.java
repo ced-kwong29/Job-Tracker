@@ -8,7 +8,7 @@ public class Application {
     private final Job job;
     private final User user;
     private final Date date;
-    private final Status status;
+    private Status status;
 
     public Application(UUID id, Job job, User user, Date date, Status status) {
         this.id = id;
@@ -32,6 +32,10 @@ public class Application {
 
     public Date getDate() {
         return date;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
     public Status getStatus() {
