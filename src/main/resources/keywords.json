@@ -1,0 +1,51 @@
+{
+  "applications": [
+    "hr",
+    "recruitment",
+    "recruiters",
+    "recruiter",
+    "recruit",
+    "applications",
+    "application",
+    "job",
+    "jobs",
+    "career",
+    "careers",
+    "apply",
+    "hiring",
+    "join",
+    "work",
+    "hire",
+    "no-reply"
+  ],
+
+  "messages": [
+    "thank you for submitting"
+  ],
+
+  "job_boards": [
+    "smartrecruiters",
+    "indeed",
+    "ziprecruiters"
+  ],
+
+  "tlds": [
+    "com",
+    "org",
+    "gov",
+    "edu",
+    ".net",
+    ".edu"
+  ],
+
+  "job_words": [
+    "position",
+    "role",
+    "job",
+    "title"
+  ],
+
+  "positions": [
+
+  ]
+}

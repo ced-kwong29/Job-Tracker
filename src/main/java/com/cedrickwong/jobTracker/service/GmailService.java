@@ -1,7 +1,6 @@
 package com.cedrickwong.jobTracker.service;
 
-
-import com.cedrickwong.jobTracker.Factory.GmailClientFactory;
+import com.cedrickwong.jobTracker.factory.GmailClientFactory;
 import com.google.api.services.gmail.model.Message;
 import com.google.api.services.gmail.Gmail;
 
@@ -13,6 +12,7 @@ import java.util.List;
 
 @Service
 public class GmailService {
+
     private final Gmail gmail;
 
     @Autowired

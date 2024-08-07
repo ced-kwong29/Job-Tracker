@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.UUID;
 
 public class Application {
+
     private final UUID id;
     private final Job job;
     private final User user;

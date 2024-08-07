@@ -1,5 +1,4 @@
-package com.cedrickwong.jobTracker.Factory;
-
+package com.cedrickwong.jobTracker.factory;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -23,6 +22,7 @@ import java.util.List;
 
 @Configuration
 public class GmailClientFactory {
+
     private static final String applicationName = "JobTracker";
     private static final JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
     private static final String tokens = "tokens";
@@ -50,6 +50,5 @@ public class GmailClientFactory {
         } catch (Exception e) {
             throw new RuntimeException("Failed to connect to Gmail API", e);
         }
-
     }
 }
