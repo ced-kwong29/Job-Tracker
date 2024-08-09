@@ -1,6 +1,6 @@
 package com.cedrickwong.jobTracker.model;
 
-import java.util.Date;
+import java.sql.Date;
 import java.util.UUID;
 
 public class Application {

@@ -1,4 +1,4 @@
-package com.cedrickwong.jobTracker.factory;
+package com.cedrickwong.jobTracker.config;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Configuration
-public class GmailClientFactory {
+public class GmailClientConfig {
 
     private static final String applicationName = "JobTracker";
     private static final JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
@@ -30,9 +30,9 @@ public class GmailClientFactory {
     private static final String credentialsFilePath = "/credentials.json";
 
     @Bean
-    public Gmail getGmail() {
+    public Gmail gmail() throws RuntimeException {
         try {
-            InputStream in = GmailClientFactory.class.getResourceAsStream(credentialsFilePath);
+            InputStream in = GmailClientConfig.class.getResourceAsStream(credentialsFilePath);
             GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(jsonFactory, new InputStreamReader(in));
 
             GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
