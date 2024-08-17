@@ -6,8 +6,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.sql.ResultSet;
-
 @RestController
 @RequestMapping("/api")
 public abstract class BaseController {
@@ -20,6 +18,4 @@ public abstract class BaseController {
     protected ResponseEntity<String> errorMessage(Exception e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error: " + e.getMessage());
     }
-
-//    protected abstract ResultSet selectCompanies();
 }

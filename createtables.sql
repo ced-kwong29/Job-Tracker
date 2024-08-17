@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS jobs (
     id varchar(36) PRIMARY KEY,
     title varchar(100) NOT NULL,
-    companyId integer REFERENCES companies(id)
+    companyId varchar(36) REFERENCES companies(id)
 );
 
 CREATE TABLE IF NOT EXISTS companies (
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS applications (
     userId varchar(36) REFERENCES users(id),
-    jobId integer REFERENCES jobs(id),
+    jobId varchar(36) REFERENCES jobs(id),
     date date NOT NULL,
     status ENUM('waiting', 'interviewing', 'rejected', 'offered', 'accepted') NOT NULL
 );

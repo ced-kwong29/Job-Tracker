@@ -2,10 +2,8 @@ package com.cedrickwong.jobTracker.rest;
 
 import com.cedrickwong.jobTracker.service.GmailService;
 
-import com.google.api.services.gmail.model.Label;
 import com.google.api.services.gmail.model.Message;
 import com.google.api.services.gmail.model.MessagePart;
-import com.google.api.services.gmail.model.MessagePartHeader;
 import com.google.gson.Gson;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.*;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.sql.Date;
 
 @RestController
@@ -64,9 +61,9 @@ public class GmailController extends BaseController {
 
             MessagePart payload = message.getPayload();
             for (MessagePart messagePart : payload.getParts()) {
-                if (messagePart.getMimeType() == "") {
-
-                }
+//                if (messagePart.getMimeType() == "") {
+//
+//                }
             }
         }
     }

@@ -1,18 +1,35 @@
 package com.cedrickwong.jobTracker.model;
 
-import java.util.UUID;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 
+@Entity
+@Table(
+        name = "users",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "email")
+        }
+)
 public class User {
-    private final String firstName, lastName;
-    private final UUID userUid;
-    private String email;
 
-    public User(String email, String firstName, String lastName, UUID userUid) {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
+    private String email, password, firstName, lastName;
+
+    public User() {
+    }
+
+    public User(String email, String password, String firstName, String lastName) {
         this.email = email;
+        this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.userUid = userUid;
     }
 
     public void setEmail(String email) {
@@ -23,25 +40,42 @@ public class User {
         return email;
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
     public String getFirstName() {
         return firstName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getLastName() {
         return lastName;
     }
 
-    public UUID getUserUid() {
-        return userUid;
+    public Long getId() {
+        return id;
     }
 
     @Override
     public String toString() {
         return "User{" +
-                "email='" + email + '\'' +
+                "id=" + id +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
-                ", userUid=" + userUid +
                 '}';
     }
 }

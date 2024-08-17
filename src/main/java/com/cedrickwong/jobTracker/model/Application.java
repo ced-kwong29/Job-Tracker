@@ -1,34 +1,46 @@
 package com.cedrickwong.jobTracker.model;
 
-import java.sql.Date;
-import java.util.UUID;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
 
+import java.util.Date;
+
+@Entity
+@Table(name = "applications")
 public class Application {
 
-    private final UUID id;
-    private final Job job;
-    private final User user;
-    private final Date date;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "userId")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "jobId")
+    private Job job;
+
+    private Date date;
     private Status status;
 
-    public Application(UUID id, Job job, User user, Date date, Status status) {
-        this.id = id;
-        this.job = job;
+    public Application() {
+    }
+
+    public Application(User user, Job job, Date date, Status status) {
         this.user = user;
+        this.job = job;
         this.date = date;
         this.status = status;
     }
 
-    public UUID getId() {
+    public Long getId() {
         return id;
-    }
-
-    public Job getJob() {
-        return job;
-    }
-
-    public User getUser() {
-        return user;
     }
 
     public Date getDate() {
@@ -45,21 +57,12 @@ public class Application {
 
     public enum Status {
         WAITING,
+        ASSESSMENT,
+        TAKE_HOME_PROJECT,
         INTERVIEWING,
         REJECTED,
         OFFERED,
         ACCEPTED,
         DECLINED
-    }
-
-    @Override
-    public String toString() {
-        return "Application{" +
-                "id=" + id +
-                ", job=" + job +
-                ", user=" + user +
-                ", date=" + date +
-                ", status=" + status +
-                '}';
     }
 }

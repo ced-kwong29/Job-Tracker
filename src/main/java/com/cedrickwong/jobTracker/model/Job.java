@@ -1,15 +1,53 @@
 package com.cedrickwong.jobTracker.model;
 
-import java.util.UUID;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
 
-public record Job(UUID id, String title, Company company) {
+@Entity
+@Table(name = "jobs")
+public class Job {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "companyId")
+    private Company company;
+
+    private String title;
+
+    public Job() {
+    }
+
+    public Job(Company company, String title) {
+        this.company = company;
+        this.title = title;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getTitle() {
+        return title;
+    }
 
     @Override
     public String toString() {
         return "Job{" +
                 "id=" + id +
-                ", title='" + title + '\'' +
                 ", company=" + company +
+                ", title='" + title + '\'' +
                 '}';
     }
 }
