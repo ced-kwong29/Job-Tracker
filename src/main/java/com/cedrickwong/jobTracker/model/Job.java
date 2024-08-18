@@ -17,7 +17,7 @@ public class Job {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "companyId")
+    @JoinColumn(name = "companyId", referencedColumnName = "id")
     private Company company;
 
     private String title;
@@ -34,8 +34,8 @@ public class Job {
         return id;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public Company getCompany() {
+        return company;
     }
 
     public String getTitle() {

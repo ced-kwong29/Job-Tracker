@@ -1,4 +1,4 @@
-package com.cedrickwong.jobTracker.config;
+package com.cedrickwong.jobTracker.configuration;
 
 import com.google.gson.Gson;
 

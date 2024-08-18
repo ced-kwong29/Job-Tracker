@@ -19,11 +19,11 @@ public class Application {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "userId", referencedColumnName = "id")
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "jobId")
+    @JoinColumn(name = "jobId", referencedColumnName = "id")
     private Job job;
 
     private Date date;
@@ -43,6 +43,14 @@ public class Application {
         return id;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public Job getJob() {
+        return job;
+    }
+
     public Date getDate() {
         return date;
     }
@@ -58,7 +66,6 @@ public class Application {
     public enum Status {
         WAITING,
         ASSESSMENT,
-        TAKE_HOME_PROJECT,
         INTERVIEWING,
         REJECTED,
         OFFERED,
