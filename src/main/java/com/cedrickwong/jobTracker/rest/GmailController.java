@@ -55,7 +55,7 @@
 //    private void processMessage(Message message) {
 //        List<String> labelIds = message.getLabelIds();
 //        if (labelIds.size() >= 2) {
-//            String company = labelIds.get(0), jobType = labelIds.get(1);
+//            String company = labelIds.getById(0), jobType = labelIds.getById(1);
 //
 //            Date date = new Date(message.getInternalDate());
 //

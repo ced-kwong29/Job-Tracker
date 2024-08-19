@@ -19,11 +19,11 @@ public class Application {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "userId", referencedColumnName = "id")
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "jobId", referencedColumnName = "id")
+    @JoinColumn(name = "job_id", referencedColumnName = "id")
     private Job job;
 
     private Date date;

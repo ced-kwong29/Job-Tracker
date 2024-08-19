@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.cedrickwong</groupId>
-	<artifactId>jobTracker</artifactId>
+	<artifactId>JobTracker</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
-	<name>jobTracker</name>
+	<name>JobTracker</name>
 	<description>Project for Tracking Job Applications</description>
 	<url/>
 	<licenses>

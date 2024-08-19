@@ -12,25 +12,25 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findUserByEmail(String email);
+    Optional<User> findByEmail(String email);
 
     @Modifying
     @Transactional
     @Query("UPDATE User u SET u.email = :email WHERE u.id = :id")
-    void updateUserByEmail(Long id, String email);
+    void updateEmail(Long id, String email);
 
     @Modifying
     @Transactional
     @Query("UPDATE User u SET u.password = :password WHERE u.id = :id")
-    void updateUserByPassword(Long id, String password);
+    void updatePassword(Long id, String password);
 
     @Modifying
     @Transactional
     @Query("UPDATE User u SET u.firstName = :firstName WHERE u.id = :id")
-    void updateUserByFirstName(Long id, String firstName);
+    void updateFirstName(Long id, String firstName);
 
     @Modifying
     @Transactional
     @Query("UPDATE User u SET u.lastName = :lastName WHERE u.id = :id")
-    void updateUserByLastName(Long id, String lastName);
+    void updateLastName(Long id, String lastName);
 }

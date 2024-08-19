@@ -32,7 +32,7 @@ public class UserController {
             return ResponseEntity.ok("Please enter email and password");
         }
 
-        Optional<User> user = userService.getUserByEmail(email);
+        Optional<User> user = userService.getByEmail(email);
         if (user.isEmpty()) {
             return ResponseEntity.ok("Invalid email");
         }
@@ -50,11 +50,11 @@ public class UserController {
             return ResponseEntity.ok("Please enter email and password");
         }
 
-        if (userService.getUserByEmail(email).isPresent()) {
+        if (userService.getByEmail(email).isPresent()) {
             return ResponseEntity.ok("User with the same email already exists");
         }
         User user = new User(email, password, firstName == null ? "" : firstName, lastName == null ? "" : lastName);
-        userService.saveUser(user);
+        userService.save(user);
 
         return ResponseEntity.ok("Successfully created:\n" + user);
     }
@@ -85,7 +85,7 @@ public class UserController {
             newInfo.append("    Last Name\n");
         }
 
-        userService.updateUser(user, updatedInfo);
+        userService.update(user, updatedInfo);
         httpSession.setAttribute("user", user);
 
         return ResponseEntity.ok("Successfully updated profile:\n" + newInfo);
@@ -106,7 +106,7 @@ public class UserController {
             return ResponseEntity.ok("Invalid email or password");
         }
 
-        userService.deleteUser(user);
+        userService.delete(user);
         httpSession.removeAttribute("user");
         httpSession.invalidate();
 

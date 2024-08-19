@@ -1,6 +1,7 @@
 package com.cedrickwong.jobTracker.repository;
 
 import com.cedrickwong.jobTracker.model.Application;
+import com.cedrickwong.jobTracker.model.User;
 
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,10 +13,10 @@ import java.util.List;
 
 @Repository
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
-    List<Application> findApplicationsByUserId(Long userId);
+    List<Application> findByUser(User user);
 
     @Modifying
     @Transactional
     @Query("Update Application a SET a.status = :status WHERE a.id = :id")
-    void updateApplicationByStatus(Long id, Application.Status status);
+    void updateStatus(Long id, Application.Status status);
 }

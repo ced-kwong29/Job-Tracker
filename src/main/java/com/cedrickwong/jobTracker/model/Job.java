@@ -17,7 +17,7 @@ public class Job {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "companyId", referencedColumnName = "id")
+    @JoinColumn(name = "company_id", referencedColumnName = "id")
     private Company company;
 
     private String title;
