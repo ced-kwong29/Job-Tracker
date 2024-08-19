@@ -14,8 +14,8 @@ import java.util.Optional;
 import java.util.Map;
 
 @RestController
-@RequestMapping(path="/api/user")
-public class UserController extends BaseController {
+@RequestMapping(path = "/api/user")
+public class UserController {
 
     private final UserService userService;
     private final HttpSession httpSession;

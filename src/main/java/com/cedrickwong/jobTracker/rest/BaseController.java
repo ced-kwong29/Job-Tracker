@@ -5,10 +5,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(path="/api")
+@RequestMapping(path = "/api")
 public class BaseController {
 
-    @GetMapping(path="/ping")
+    @GetMapping(path = "/ping")
     public ResponseEntity<String> ping() {
         return ResponseEntity.ok("You have pinged the API!");
     }
