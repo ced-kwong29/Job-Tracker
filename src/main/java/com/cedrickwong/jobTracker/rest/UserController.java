@@ -7,17 +7,14 @@ import jakarta.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.Map;
 
 @RestController
-@RequestMapping(path="/user")
+@RequestMapping(path="/api/user")
 public class UserController extends BaseController {
 
     private final UserService userService;
@@ -44,13 +41,13 @@ public class UserController extends BaseController {
         }
 
         httpSession.setAttribute("user", user.get());
-        return ResponseEntity.ok("Successfully logged in:\n" + user);
+        return ResponseEntity.ok("Successfully logged in:\n" + user.get());
     }
 
     @PostMapping(path = "/create")
-    public ResponseEntity<String> create(@RequestParam String email, @RequestParam String password, @RequestParam String firstName, @RequestParam String lastName) {
+    public ResponseEntity<String> create(@RequestParam String email, @RequestParam String password, @RequestParam(required = false) String firstName, @RequestParam(required = false) String lastName) {
         if (email == null || password == null) {
-            return ResponseEntity.ok("Please provide email and password");
+            return ResponseEntity.ok("Please enter email and password");
         }
 
         if (userService.getUserByEmail(email).isPresent()) {
@@ -63,8 +60,8 @@ public class UserController extends BaseController {
     }
 
     @PostMapping(path = "/update")
-    public ResponseEntity<String> update(@RequestParam String email, @RequestParam String password, @RequestParam String firstName, @RequestParam String lastName) {
-        Object user = httpSession.getAttribute("user");
+    public ResponseEntity<String> update(@RequestParam(required = false) String email, @RequestParam(required = false) String password, @RequestParam(required = false) String firstName, @RequestParam(required = false) String lastName) {
+        User user = (User) httpSession.getAttribute("user");
         if (user == null) {
             return ResponseEntity.ok("User is not logged in");
         }
@@ -88,7 +85,7 @@ public class UserController extends BaseController {
             newInfo.append("    Last Name\n");
         }
 
-        userService.updateUser((User) user, updatedInfo);
+        userService.updateUser(user, updatedInfo);
         httpSession.setAttribute("user", user);
 
         return ResponseEntity.ok("Successfully updated profile:\n" + newInfo);
@@ -97,20 +94,34 @@ public class UserController extends BaseController {
     @PostMapping(path = "/delete")
     public ResponseEntity<String> delete(@RequestParam String email, @RequestParam String password) {
         if (email == null || password == null) {
-            return ResponseEntity.ok("Please provide email and password");
+            return ResponseEntity.ok("Please enter email and password");
         }
 
-        Optional<User> user = userService.getUserByEmail(email);
-        if (user.isEmpty()) {
-            return ResponseEntity.ok("Invalid email");
-        }
-        if (!user.get().getPassword().equals(password)) {
-            return ResponseEntity.ok("Invalid password");
+        User user = (User) httpSession.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.ok("User is not logged in");
         }
 
-        userService.deleteUser(user.get());
+        if (!(user.getEmail().equals(email) && user.getPassword().equals(password))) {
+            return ResponseEntity.ok("Invalid email or password");
+        }
+
+        userService.deleteUser(user);
+        httpSession.removeAttribute("user");
         httpSession.invalidate();
 
         return ResponseEntity.ok("Successfully deleted:\n" );
+    }
+
+    @PostMapping(path = "/logout")
+    public ResponseEntity<String> logout() {
+        if (httpSession.getAttribute("user") == null) {
+            return ResponseEntity.ok("User is not logged in");
+        }
+
+        httpSession.removeAttribute("user");
+        httpSession.invalidate();
+
+        return ResponseEntity.ok("Successfully logged out");
     }
 }

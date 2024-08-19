@@ -2,17 +2,15 @@ package com.cedrickwong.jobTracker.rest;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api")
-public abstract class BaseController {
+@RequestMapping(path="/api")
+public class BaseController {
 
     @GetMapping(path="/ping")
-    public String ping() {
-        return "You have pinged the API!";
+    public ResponseEntity<String> ping() {
+        return ResponseEntity.ok("You have pinged the API!");
     }
 
     protected ResponseEntity<String> errorMessage(Exception e) {
