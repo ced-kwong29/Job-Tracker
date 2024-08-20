@@ -1,4 +1,4 @@
-package com.cedrickwong.jobTracker.model;
+package com.cedrickwong.JobTracker.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -40,6 +40,13 @@ public class Job {
 
     public String getTitle() {
         return title;
+    }
+
+    public enum Type {
+        FULL_TIME,
+        PART_TIME,
+        CONTRACT,
+        INTERNSHIP,
     }
 
     @Override

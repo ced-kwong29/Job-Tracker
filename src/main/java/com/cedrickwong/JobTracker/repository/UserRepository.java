@@ -1,6 +1,6 @@
-package com.cedrickwong.jobTracker.repository;
+package com.cedrickwong.JobTracker.repository;
 
-import com.cedrickwong.jobTracker.model.User;
+import com.cedrickwong.JobTracker.model.User;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.JpaRepository;

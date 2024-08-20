@@ -1,9 +1,8 @@
-package com.cedrickwong.jobTracker.repository;
+package com.cedrickwong.JobTracker.repository;
 
-import com.cedrickwong.jobTracker.model.Application;
-import com.cedrickwong.jobTracker.model.Company;
-import com.cedrickwong.jobTracker.model.Job;
-import com.cedrickwong.jobTracker.model.User;
+import com.cedrickwong.JobTracker.model.Application;
+import com.cedrickwong.JobTracker.model.Company;
+import com.cedrickwong.JobTracker.model.User;
 
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,7 +20,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     List<Application> findByStatus(Application.Status status);
     List<Application> findBetweenDates(Date startDate, Date endDate);
 
-//    @Query("SELECT a FROM Application a JOIN a.job j WHERE j.title = :jobTitle")
     @Query("SELECT a FROM Application a WHERE a.job.title = :jobTitle")
     List<Application> findByJobTitle(@Param("jobTitle") String jobTitle);
 

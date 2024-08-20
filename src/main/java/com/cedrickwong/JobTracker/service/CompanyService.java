@@ -1,7 +1,7 @@
-package com.cedrickwong.jobTracker.service;
+package com.cedrickwong.JobTracker.service;
 
-import com.cedrickwong.jobTracker.model.Company;
-import com.cedrickwong.jobTracker.repository.CompanyRepository;
+import com.cedrickwong.JobTracker.model.Company;
+import com.cedrickwong.JobTracker.repository.CompanyRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -22,11 +22,11 @@ public class CompanyService {
         return companyRepository.findByName(name);
     }
 
-    public void saveCompany(Company company) {
+    public void save(Company company) {
         companyRepository.save(company);
     }
 
-    public void deleteCompany(Company company) {
+    public void delete(Company company) {
         companyRepository.delete(company);
     }
 }

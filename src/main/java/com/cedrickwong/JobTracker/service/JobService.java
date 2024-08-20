@@ -1,8 +1,8 @@
-package com.cedrickwong.jobTracker.service;
+package com.cedrickwong.JobTracker.service;
 
-import com.cedrickwong.jobTracker.model.Company;
-import com.cedrickwong.jobTracker.model.Job;
-import com.cedrickwong.jobTracker.repository.JobRepository;
+import com.cedrickwong.JobTracker.model.Company;
+import com.cedrickwong.JobTracker.model.Job;
+import com.cedrickwong.JobTracker.repository.JobRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,6 +30,10 @@ public class JobService {
 
     public List<Job> getAllFromCompany(Company company) {
         return jobRepository.findByCompany(company);
+    }
+
+    public Optional<Job> getFromCompanyByTitle(Company company, String title) {
+        return jobRepository.findByCompanyAndTitle(company, title);
     }
 
     public void save(Job job) {

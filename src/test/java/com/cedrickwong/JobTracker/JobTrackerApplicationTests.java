@@ -1,4 +1,4 @@
-package com.cedrickwong.jobTracker;
+package com.cedrickwong.JobTracker;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

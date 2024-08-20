@@ -1,4 +1,4 @@
-package com.cedrickwong.jobTracker.rest;
+package com.cedrickwong.JobTracker.rest;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

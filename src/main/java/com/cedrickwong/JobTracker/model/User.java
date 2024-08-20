@@ -1,4 +1,4 @@
-package com.cedrickwong.jobTracker.model;
+package com.cedrickwong.JobTracker.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;

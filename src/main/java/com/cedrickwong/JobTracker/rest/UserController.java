@@ -1,7 +1,7 @@
-package com.cedrickwong.jobTracker.rest;
+package com.cedrickwong.JobTracker.rest;
 
-import com.cedrickwong.jobTracker.model.User;
-import com.cedrickwong.jobTracker.service.UserService;
+import com.cedrickwong.JobTracker.model.User;
+import com.cedrickwong.JobTracker.service.UserService;
 
 import jakarta.servlet.http.HttpSession;
 
