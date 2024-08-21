@@ -7,6 +7,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 
+import java.util.Objects;
+
 @Entity
 @Table(
         name = "users",
@@ -77,5 +79,23 @@ public class User {
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        return id.equals(((User) o).getId()) ;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

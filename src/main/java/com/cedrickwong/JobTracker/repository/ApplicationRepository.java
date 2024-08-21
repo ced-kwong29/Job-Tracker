@@ -1,6 +1,7 @@
 package com.cedrickwong.JobTracker.repository;
 
 import com.cedrickwong.JobTracker.model.Application;
+import com.cedrickwong.JobTracker.model.Application.Status;
 import com.cedrickwong.JobTracker.model.Company;
 import com.cedrickwong.JobTracker.model.User;
 
@@ -17,16 +18,18 @@ import java.util.List;
 @Repository
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
     List<Application> findByUser(User user);
-    List<Application> findByStatus(Application.Status status);
+
+    @Query("SELECT a FROM Application a WHERE a.user = :user AND a.status = :status")
+    List<Application> findByUserAndStatus(User user, Status status);
 
     @Query("SELECT a FROM Application a WHERE a.user = :user AND a.date BETWEEN :startDate AND :endDate")
     List<Application> findByUserAndDates(User user, LocalDate startDate, LocalDate endDate);
 
-    @Query("SELECT a FROM Application a WHERE a.job.title = :jobTitle")
-    List<Application> findByJobTitle(@Param("jobTitle") String jobTitle);
+    @Query("SELECT a FROM Application a WHERE a.user = :user AND a.job.title = :jobTitle")
+    List<Application> findByUserAndJobTitle(User user, @Param("jobTitle") String jobTitle);
 
-    @Query("SELECT a FROM Application a WHERE a.job.company = :company")
-    List<Application> findByCompany(Company company);
+    @Query("SELECT a FROM Application a WHERE a.user = :user AND a.job.company = :company")
+    List<Application> findByUserAndCompany(User user, Company company);
 
     @Modifying
     @Transactional

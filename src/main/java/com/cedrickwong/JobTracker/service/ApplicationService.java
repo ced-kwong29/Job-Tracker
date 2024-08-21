@@ -30,20 +30,20 @@ public class ApplicationService {
         return applicationRepository.findByUser(user);
     }
 
-    public List<Application> getAllByStatus(Application.Status status) {
-        return applicationRepository.findByStatus(status);
+    public List<Application> getAllByUserAndStatus(User user, Application.Status status) {
+        return applicationRepository.findByUserAndStatus(user, status);
     }
 
     public List<Application> getAllByUserAndDates(User user, LocalDate startDate, LocalDate endDate) {
         return applicationRepository.findByUserAndDates(user, startDate, endDate);
     }
 
-    public List<Application> getAllByCompany(Company company) {
-        return applicationRepository.findByCompany(company);
+    public List<Application> getAllByUserAndCompany(User user, Company company) {
+        return applicationRepository.findByUserAndCompany(user, company);
     }
 
-    public List<Application> getAllByJobTitle(String jobTitle) {
-        return applicationRepository.findByJobTitle(jobTitle);
+    public List<Application> getAllByUserAndJobTitle(User user, String jobTitle) {
+        return applicationRepository.findByUserAndJobTitle(user, jobTitle);
     }
 
     public void save(Application application) {

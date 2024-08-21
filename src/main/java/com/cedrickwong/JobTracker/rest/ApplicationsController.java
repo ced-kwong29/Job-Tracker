@@ -36,7 +36,7 @@ public class ApplicationsController {
         this.httpSession = httpSession;
     }
 
-    @GetMapping
+    @GetMapping("/apps")
     public ResponseEntity<?> getAllFromUser() {
         User user = (User) httpSession.getAttribute("user");
         return ResponseEntity.ok(user == null ? "User is not logged in" : applicationService.getAllByUser(user));
@@ -44,8 +44,16 @@ public class ApplicationsController {
 
     @GetMapping("/app")
     public ResponseEntity<?> get(@RequestParam Long id) {
-        Optional<Application> application = applicationService.getById(id);
-        return ResponseEntity.ok(application.isEmpty() ? "Invalid application id" : application.get());
+        User user = (User) httpSession.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.ok("User is not logged in");
+        }
+        Optional<Application> applicationSearch = applicationService.getById(id);
+        if (applicationSearch.isEmpty()) {
+            return ResponseEntity.ok("Invalid application id");
+        }
+        Application application = applicationSearch.get();
+        return ResponseEntity.ok(!user.equals(application.getUser()) ? "Unauthorized" : application);
     }
 
     @GetMapping("/between")
@@ -56,14 +64,37 @@ public class ApplicationsController {
         }
 
         LocalDate startDate = LocalDate.parse(start), endDate = LocalDate.parse(end);
-        if (startDate.isAfter(endDate)) {
-            return ResponseEntity.ok("Start date cannot be after end date");
+        return ResponseEntity.ok(startDate.isAfter(endDate) ? "Start date cannot be after end date" : applicationService.getAllByUserAndDates(user, startDate, endDate));
+    }
+
+    @GetMapping("/to")
+    public ResponseEntity<?> getByCompany(@RequestParam String companyName) {
+        User user = (User) httpSession.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.ok("User is not logged in");
         }
-        return ResponseEntity.ok(applicationService.getAllByUserAndDates(user, startDate, endDate));
+
+        Optional<Company> companySearch = companyService.getByName(companyName);
+        return ResponseEntity.ok(companySearch.isEmpty() ? "Invalid company name" : applicationService.getAllByUserAndCompany(user, companySearch.get()));
+    }
+
+    @GetMapping("/for")
+    public ResponseEntity<?> getByJobTitle(@RequestParam String jobTitle) {
+        User user = (User) httpSession.getAttribute("user");
+        return ResponseEntity.ok(user == null ? "User is not logged in" : applicationService.getAllByUserAndJobTitle(user, jobTitle));
+    }
+
+    @GetMapping("/{status}")
+    public ResponseEntity<?> getByStatus(@PathVariable Status status) {
+        User user = (User) httpSession.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.ok("User is not logged in");
+        }
+        return ResponseEntity.ok(applicationService.getAllByUserAndStatus(user, status));
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> create(@RequestParam String companyName, @RequestParam String jobTitle, @RequestParam Type type, @RequestParam(required = false) LocalDate date, @RequestParam(required = false) Status status) {
+    public ResponseEntity<String> create(@RequestParam String companyName, @RequestParam String jobTitle, @RequestParam Type type, @RequestParam(required = false) String date, @RequestParam(required = false) Status status) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
             return ResponseEntity.ok("User is not logged in");
@@ -73,7 +104,7 @@ public class ApplicationsController {
         Job job = companySearch.map(company -> jobService.getFromCompanyByTitle(company, jobTitle).orElseGet(() -> createJob(company, jobTitle, type)))
                             .orElseGet(() -> createJob(createCompany(companyName), jobTitle, type));
 
-        Application application = new Application(user, job, date == null ? LocalDate.now() : date, status == null ? Status.WAITING : status);
+        Application application = new Application(user, job, date == null ? LocalDate.now() : LocalDate.parse(date), status == null ? Status.WAITING : status);
         applicationService.save(application);
         return ResponseEntity.ok("Successfully created:\n" + application);
     }
@@ -90,14 +121,15 @@ public class ApplicationsController {
         return job;
     }
 
-    @PostMapping("/app/{interact}")
-    public ResponseEntity<?> interact(@PathVariable String interact, @RequestParam Long id, @RequestParam(required = false) Status status) {
+    @PostMapping("/{interact}")
+    public ResponseEntity<String> interact(@PathVariable String interact, @RequestParam Long id, @RequestParam(required = false) Status status) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
             return ResponseEntity.ok("User is not logged in");
         }
 
         Optional<Application> applicationSearch;
+        Application application;
         switch(interact) {
             case "deleteAll":
                 applicationService.deleteAllFromUser(user);
@@ -108,18 +140,25 @@ public class ApplicationsController {
                 if (applicationSearch.isEmpty()) {
                     return ResponseEntity.ok("Invalid application id");
                 }
-                applicationService.delete(applicationSearch.get());
-                return ResponseEntity.ok("Successfully deleted:\n" + applicationSearch.get());
+                application = applicationSearch.get();
+                if (!user.equals(application.getUser())) {
+                    return ResponseEntity.ok("Unauthorized access to application");
+                }
+                applicationService.delete(application);
+                return ResponseEntity.ok("Successfully deleted:\n" + application);
 
             case "update":
                 applicationSearch = applicationService.getById(id);
                 if (applicationSearch.isEmpty()) {
                     return ResponseEntity.ok("Invalid application id");
                 }
+                application = applicationSearch.get();
+                if (!user.equals(application.getUser())) {
+                    return ResponseEntity.ok("Unauthorized access to application");
+                }
                 if (status == null) {
                     return ResponseEntity.ok("Please provide updated status");
                 }
-                Application application = applicationSearch.get();
                 applicationService.update(application, status);
                 return ResponseEntity.ok("Successfully updated:\n" + application);
         }
