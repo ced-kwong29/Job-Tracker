@@ -18,6 +18,8 @@ import java.util.List;
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
     List<Application> findByUser(User user);
     List<Application> findByStatus(Application.Status status);
+
+    @Query("SELECT a FROM Application a WHERE a.date BETWEEN :startDate AND :endDate")
     List<Application> findBetweenDates(Date startDate, Date endDate);
 
     @Query("SELECT a FROM Application a WHERE a.job.title = :jobTitle")

@@ -22,12 +22,15 @@ public class Job {
 
     private String title;
 
+    private Type type;
+
     public Job() {
     }
 
-    public Job(Company company, String title) {
+    public Job(Company company, String title, Type type) {
         this.company = company;
         this.title = title;
+        this.type = type;
     }
 
     public Long getId() {
@@ -40,6 +43,10 @@ public class Job {
 
     public String getTitle() {
         return title;
+    }
+
+    public Type getType() {
+        return type;
     }
 
     public enum Type {

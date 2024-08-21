@@ -2,15 +2,17 @@ package com.cedrickwong.JobTracker.rest;
 
 import com.cedrickwong.JobTracker.model.Application;
 import com.cedrickwong.JobTracker.model.Application.Status;
-import com.cedrickwong.JobTracker.model.Company;
-import com.cedrickwong.JobTracker.model.Job;
-import com.cedrickwong.JobTracker.model.User;
 import com.cedrickwong.JobTracker.service.ApplicationService;
+import com.cedrickwong.JobTracker.model.Company;
 import com.cedrickwong.JobTracker.service.CompanyService;
+import com.cedrickwong.JobTracker.model.Job;
+import com.cedrickwong.JobTracker.model.Job.Type;
 import com.cedrickwong.JobTracker.service.JobService;
+import com.cedrickwong.JobTracker.model.User;
 
 import jakarta.servlet.http.HttpSession;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
@@ -26,6 +28,7 @@ public class ApplicationsController {
     private final JobService jobService;
     private final HttpSession httpSession;
 
+    @Autowired
     public ApplicationsController(ApplicationService applicationService, CompanyService companyService, JobService jobService, HttpSession httpSession) {
         this.applicationService = applicationService;
         this.companyService = companyService;
@@ -45,18 +48,20 @@ public class ApplicationsController {
         return ResponseEntity.ok(application.isEmpty() ? "Invalid application id" : application.get());
     }
 
-    @GetMapping("/create")
-    public ResponseEntity<?> createApplication(@RequestParam String companyName, @RequestParam String jobTitle, @RequestParam(required = false) Date date, @RequestParam(required = false) Status status) {
+    @PostMapping("/create")
+    public ResponseEntity<?> createApplication(@RequestParam String companyName, @RequestParam String jobTitle, @RequestParam Type type, @RequestParam(required = false) Date date, @RequestParam(required = false) Status status) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
             return ResponseEntity.ok("User is not logged in");
         }
 
         Optional<Company> companySearch = companyService.getByName(companyName);
-        Job job = companySearch.map(company -> jobService.getFromCompanyByTitle(company, jobTitle).orElseGet(() -> createJob(company, jobTitle)))
-                            .orElseGet(() -> createJob(createCompany(companyName), jobTitle));
+        Job job = companySearch.map(company -> jobService.getFromCompanyByTitle(company, jobTitle).orElseGet(() -> createJob(company, jobTitle, type)))
+                            .orElseGet(() -> createJob(createCompany(companyName), jobTitle, type));
 
-        return ResponseEntity.ok("Successfully created:\n" + new Application(user, job, date == null ? new Date() : date, status == null ? Status.WAITING : status));
+        Application application = new Application(user, job, date == null ? new Date() : date, status == null ? Status.WAITING : status);
+        applicationService.save(application);
+        return ResponseEntity.ok("Successfully created:\n" + application);
     }
 
     private Company createCompany(String name) {
@@ -65,13 +70,13 @@ public class ApplicationsController {
         return company;
     }
 
-    private Job createJob(Company company, String title) {
-        Job job = new Job(company, title);
+    private Job createJob(Company company, String title, Type type) {
+        Job job = new Job(company, title, type);
         jobService.save(job);
         return job;
     }
 
-    @GetMapping("/app/{interact}")
+    @PostMapping("/app/{interact}")
     public ResponseEntity<?> interactApplication(@PathVariable String interact, @RequestParam Long id, @RequestParam(required = false) Status status) {
         if (httpSession.getAttribute("user") == null) {
             return ResponseEntity.ok("User is not logged in");

@@ -76,4 +76,15 @@ public class Application {
         ACCEPTED,
         DECLINED
     }
+
+    @Override
+    public String toString() {
+        return "Application{" +
+                "id=" + id +
+                ", user=" + user +
+                ", job=" + job +
+                ", date=" + date +
+                ", status=" + status +
+                '}';
+    }
 }
