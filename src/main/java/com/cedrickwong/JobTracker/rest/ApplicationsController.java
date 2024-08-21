@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Optional;
 
 @RestController
@@ -37,19 +37,33 @@ public class ApplicationsController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllApplicationsOfUser() {
+    public ResponseEntity<?> getAllFromUser() {
         User user = (User) httpSession.getAttribute("user");
         return ResponseEntity.ok(user == null ? "User is not logged in" : applicationService.getAllByUser(user));
     }
 
     @GetMapping("/app")
-    public ResponseEntity<?> getApplication(@RequestParam Long id) {
+    public ResponseEntity<?> get(@RequestParam Long id) {
         Optional<Application> application = applicationService.getById(id);
         return ResponseEntity.ok(application.isEmpty() ? "Invalid application id" : application.get());
     }
 
+    @GetMapping("/between")
+    public ResponseEntity<?> getBetweenDates(@RequestParam String start, @RequestParam String end) {
+        User user = (User) httpSession.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.ok("User is not logged in");
+        }
+
+        LocalDate startDate = LocalDate.parse(start), endDate = LocalDate.parse(end);
+        if (startDate.isAfter(endDate)) {
+            return ResponseEntity.ok("Start date cannot be after end date");
+        }
+        return ResponseEntity.ok(applicationService.getAllByUserAndDates(user, startDate, endDate));
+    }
+
     @PostMapping("/create")
-    public ResponseEntity<?> createApplication(@RequestParam String companyName, @RequestParam String jobTitle, @RequestParam Type type, @RequestParam(required = false) Date date, @RequestParam(required = false) Status status) {
+    public ResponseEntity<?> create(@RequestParam String companyName, @RequestParam String jobTitle, @RequestParam Type type, @RequestParam(required = false) LocalDate date, @RequestParam(required = false) Status status) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
             return ResponseEntity.ok("User is not logged in");
@@ -59,7 +73,7 @@ public class ApplicationsController {
         Job job = companySearch.map(company -> jobService.getFromCompanyByTitle(company, jobTitle).orElseGet(() -> createJob(company, jobTitle, type)))
                             .orElseGet(() -> createJob(createCompany(companyName), jobTitle, type));
 
-        Application application = new Application(user, job, date == null ? new Date() : date, status == null ? Status.WAITING : status);
+        Application application = new Application(user, job, date == null ? LocalDate.now() : date, status == null ? Status.WAITING : status);
         applicationService.save(application);
         return ResponseEntity.ok("Successfully created:\n" + application);
     }
@@ -77,29 +91,37 @@ public class ApplicationsController {
     }
 
     @PostMapping("/app/{interact}")
-    public ResponseEntity<?> interactApplication(@PathVariable String interact, @RequestParam Long id, @RequestParam(required = false) Status status) {
-        if (httpSession.getAttribute("user") == null) {
+    public ResponseEntity<?> interact(@PathVariable String interact, @RequestParam Long id, @RequestParam(required = false) Status status) {
+        User user = (User) httpSession.getAttribute("user");
+        if (user == null) {
             return ResponseEntity.ok("User is not logged in");
         }
 
-        Optional<Application> applicationSearch = applicationService.getById(id);
-        if (applicationSearch.isEmpty()) {
-            return ResponseEntity.ok("Invalid application id");
-        }
+        Optional<Application> applicationSearch;
+        switch(interact) {
+            case "deleteAll":
+                applicationService.deleteAllFromUser(user);
+                return ResponseEntity.ok("Successfully deleted all applications:");
 
-        if (interact.equals("delete")) {
-            applicationService.delete(applicationSearch.get());
-            return ResponseEntity.ok("Successfully deleted:\n" + applicationSearch.get());
-        }
+            case "delete":
+                applicationSearch = applicationService.getById(id);
+                if (applicationSearch.isEmpty()) {
+                    return ResponseEntity.ok("Invalid application id");
+                }
+                applicationService.delete(applicationSearch.get());
+                return ResponseEntity.ok("Successfully deleted:\n" + applicationSearch.get());
 
-        if (interact.equals("update")) {
-            if (status == null) {
-                return ResponseEntity.ok("Please provide updated status");
-            }
-            Application application = applicationSearch.get();
-            application.setStatus(status);
-            applicationService.update(application, status);
-            return ResponseEntity.ok("Successfully updated:\n" + application);
+            case "update":
+                applicationSearch = applicationService.getById(id);
+                if (applicationSearch.isEmpty()) {
+                    return ResponseEntity.ok("Invalid application id");
+                }
+                if (status == null) {
+                    return ResponseEntity.ok("Please provide updated status");
+                }
+                Application application = applicationSearch.get();
+                applicationService.update(application, status);
+                return ResponseEntity.ok("Successfully updated:\n" + application);
         }
 
         return ResponseEntity.badRequest().build();

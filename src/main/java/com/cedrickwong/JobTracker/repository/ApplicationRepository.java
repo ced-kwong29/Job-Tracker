@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -19,8 +19,8 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     List<Application> findByUser(User user);
     List<Application> findByStatus(Application.Status status);
 
-    @Query("SELECT a FROM Application a WHERE a.date BETWEEN :startDate AND :endDate")
-    List<Application> findBetweenDates(Date startDate, Date endDate);
+    @Query("SELECT a FROM Application a WHERE a.user = :user AND a.date BETWEEN :startDate AND :endDate")
+    List<Application> findByUserAndDates(User user, LocalDate startDate, LocalDate endDate);
 
     @Query("SELECT a FROM Application a WHERE a.job.title = :jobTitle")
     List<Application> findByJobTitle(@Param("jobTitle") String jobTitle);

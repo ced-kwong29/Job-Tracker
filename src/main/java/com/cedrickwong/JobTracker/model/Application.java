@@ -8,7 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "applications")
@@ -26,13 +26,13 @@ public class Application {
     @JoinColumn(name = "job_id", referencedColumnName = "id")
     private Job job;
 
-    private Date date;
+    private LocalDate date;
     private Status status;
 
     public Application() {
     }
 
-    public Application(User user, Job job, Date date, Status status) {
+    public Application(User user, Job job, LocalDate date, Status status) {
         this.user = user;
         this.job = job;
         this.date = date;
@@ -51,11 +51,11 @@ public class Application {
         return job;
     }
 
-    public void setDate(Date date) {
+    public void setDate(LocalDate date) {
         this.date = date;
     }
 
-    public Date getDate() {
+    public LocalDate getDate() {
         return date;
     }
 
