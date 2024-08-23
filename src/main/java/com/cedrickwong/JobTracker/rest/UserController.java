@@ -59,7 +59,7 @@ public class UserController {
         return ResponseEntity.ok("Successfully created:\n" + user);
     }
 
-    @PostMapping(path = "/update")
+    @PutMapping(path = "/update")
     public ResponseEntity<String> update(@RequestParam(required = false) String email, @RequestParam(required = false) String password, @RequestParam(required = false) String firstName, @RequestParam(required = false) String lastName) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
