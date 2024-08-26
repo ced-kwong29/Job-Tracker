@@ -76,9 +76,6 @@ public class ApplicationsController {
         if (companyName == null || companyName.isEmpty() || jobTitle == null || jobTitle.isEmpty()) {
             return ResponseEntity.badRequest().body("Provide company name and job title");
         }
-        if (status == null) {
-            return ResponseEntity.badRequest().body("Provide valid status");
-        }
 
         Optional<Company> companySearch = companyService.getByName(companyName);
         Job job = companySearch.map(company -> jobService.getFromCompanyByTitle(company, jobTitle).orElseGet(() -> createJob(company, jobTitle, type)))
