@@ -84,7 +84,7 @@ public class ApplicationsController {
         Job job = companySearch.map(company -> jobService.getFromCompanyByTitle(company, jobTitle).orElseGet(() -> createJob(company, jobTitle, type)))
                             .orElseGet(() -> createJob(createCompany(companyName), jobTitle, type));
 
-        Application application = new Application(user, job, date == null ? LocalDate.now() : LocalDate.parse(date), status == null ? Status.WAITING : status);
+        Application application = new Application(user, job, date == null ? LocalDate.now() : LocalDate.parse(date), status);
         applicationService.save(application);
         return ResponseEntity.ok("Successfully created:\n" + application);
     }
