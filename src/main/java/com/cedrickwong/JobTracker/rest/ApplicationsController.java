@@ -76,15 +76,12 @@ public class ApplicationsController {
         if (companyName == null || companyName.isEmpty() || jobTitle == null || jobTitle.isEmpty()) {
             return ResponseEntity.badRequest().body("Provide company name and job title");
         }
-        if (status == null) {
-            return ResponseEntity.badRequest().body("Provide valid status");
-        }
 
         Optional<Company> companySearch = companyService.getByName(companyName);
         Job job = companySearch.map(company -> jobService.getFromCompanyByTitle(company, jobTitle).orElseGet(() -> createJob(company, jobTitle, type)))
                             .orElseGet(() -> createJob(createCompany(companyName), jobTitle, type));
 
-        Application application = new Application(user, job, date == null ? LocalDate.now() : LocalDate.parse(date), status);
+        Application application = new Application(user, job, date == null ? LocalDate.now() : LocalDate.parse(date), status == null ? Status.WAITING : status);
         applicationService.save(application);
         return ResponseEntity.ok("Successfully created:\n" + application);
     }
