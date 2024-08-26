@@ -9,9 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Optional;
-import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/api/user")
@@ -28,7 +26,7 @@ public class UserController {
 
     @PostMapping(path = "/login")
     public ResponseEntity<String> login(@RequestParam String email, @RequestParam String password) {
-        if (email == null || password == null) {
+        if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
             return ResponseEntity.ok("Please enter email and password");
         }
 
@@ -63,47 +61,33 @@ public class UserController {
     public ResponseEntity<String> update(@RequestParam(required = false) String email, @RequestParam(required = false) String password, @RequestParam(required = false) String firstName, @RequestParam(required = false) String lastName) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
-            return ResponseEntity.ok("User is not logged in");
+            return ResponseEntity.badRequest().body("User is not logged in");
         }
 
-        Map<String, String> updatedInfo = new HashMap<>();
-        StringBuilder newInfo = new StringBuilder();
-        if (email != null) {
-            updatedInfo.put("email", email);
-            newInfo.append("    Email\n");
-        }
-        if (password != null) {
-            updatedInfo.put("password", password);
-            newInfo.append("    Password\n");
-        }
-        if (firstName != null) {
-            updatedInfo.put("firstName", firstName);
-            newInfo.append("    First Name\n");
-        }
-        if (lastName != null) {
-            updatedInfo.put("lastName", lastName);
-            newInfo.append("    Last Name\n");
+        try {
+            userService.update(user, email, password, firstName, lastName);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.ok(e.getMessage());
         }
 
-        userService.update(user, updatedInfo);
         httpSession.setAttribute("user", user);
 
-        return ResponseEntity.ok("Successfully updated profile:\n" + newInfo);
+        return ResponseEntity.ok("Successfully updated:\n" + user);
     }
 
     @PostMapping(path = "/delete")
     public ResponseEntity<String> delete(@RequestParam String email, @RequestParam String password) {
-        if (email == null || password == null) {
-            return ResponseEntity.ok("Please enter email and password");
+        if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
+            return ResponseEntity.badRequest().body("Please enter email and password");
         }
 
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
-            return ResponseEntity.ok("User is not logged in");
+            return ResponseEntity.badRequest().body("User is not logged in");
         }
 
         if (!(user.getEmail().equals(email) && user.getPassword().equals(password))) {
-            return ResponseEntity.ok("Invalid email or password");
+            return ResponseEntity.badRequest().body("Invalid email or password");
         }
 
         userService.delete(user);
@@ -116,7 +100,7 @@ public class UserController {
     @PostMapping(path = "/logout")
     public ResponseEntity<String> logout() {
         if (httpSession.getAttribute("user") == null) {
-            return ResponseEntity.ok("User is not logged in");
+            return ResponseEntity.badRequest().body("User is not logged in");
         }
 
         httpSession.removeAttribute("user");

@@ -2,7 +2,6 @@ package com.cedrickwong.JobTracker.repository;
 
 import com.cedrickwong.JobTracker.model.Application;
 import com.cedrickwong.JobTracker.model.Application.Status;
-import com.cedrickwong.JobTracker.model.Company;
 import com.cedrickwong.JobTracker.model.User;
 import com.cedrickwong.JobTracker.model.Job.Type;
 
@@ -10,7 +9,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;

@@ -2,7 +2,6 @@ package com.cedrickwong.JobTracker.repository;
 
 import com.cedrickwong.JobTracker.model.Company;
 import com.cedrickwong.JobTracker.model.Job;
-import com.cedrickwong.JobTracker.model.Job.Type;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

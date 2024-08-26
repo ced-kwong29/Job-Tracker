@@ -40,25 +40,28 @@ public class ApplicationsController {
     public ResponseEntity<?> getAllFromUser(@RequestParam(required = false) String start, @RequestParam(required = false) String end, @RequestParam(required = false) Status status, @RequestParam(required = false) Type type, @RequestParam(required = false) String companyName, @RequestParam(required = false) String jobTitle) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
-            return ResponseEntity.ok("User is not logged in");
+            return ResponseEntity.badRequest().body("User is not logged in");
         }
 
-        if ((start == null && end != null) || (start != null && end == null)) {
-            return ResponseEntity.ok("Provide both start and end dates");
+        if (start == null || start.isEmpty() || end == null || end.isEmpty()) {
+            return ResponseEntity.badRequest().body("Provide both start and end dates");
         }
 
-        return ResponseEntity.ok(applicationService.getAllByUser(user, start == null ? null : LocalDate.parse(start), end == null ? null : LocalDate.parse(end), companyName, jobTitle, status, type));
+        return ResponseEntity.ok(applicationService.getAllByUser(user, LocalDate.parse(start), LocalDate.parse(end), companyName, jobTitle, status, type));
     }
 
     @GetMapping("/app")
     public ResponseEntity<?> get(@RequestParam Long id) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
-            return ResponseEntity.ok("User is not logged in");
+            return ResponseEntity.badRequest().body("User is not logged in");
+        }
+        if (id == null) {
+            return ResponseEntity.badRequest().body("Provide application id");
         }
         Optional<Application> applicationSearch = applicationService.getById(id);
         if (applicationSearch.isEmpty()) {
-            return ResponseEntity.ok("Invalid application id");
+            return ResponseEntity.badRequest().body("Invalid application id");
         }
         Application application = applicationSearch.get();
         return ResponseEntity.ok(!user.equals(application.getUser()) ? "Unauthorized" : application);
@@ -68,7 +71,13 @@ public class ApplicationsController {
     public ResponseEntity<String> create(@RequestParam String companyName, @RequestParam String jobTitle, @RequestParam Type type, @RequestParam(required = false) String date, @RequestParam(required = false) Status status) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
-            return ResponseEntity.ok("User is not logged in");
+            return ResponseEntity.badRequest().body("User is not logged in");
+        }
+        if (companyName == null || companyName.isEmpty() || jobTitle == null || jobTitle.isEmpty()) {
+            return ResponseEntity.badRequest().body("Provide company name and job title");
+        }
+        if (status == null) {
+            return ResponseEntity.badRequest().body("Provide valid status");
         }
 
         Optional<Company> companySearch = companyService.getByName(companyName);
@@ -96,7 +105,7 @@ public class ApplicationsController {
     public ResponseEntity<String> interact(@PathVariable String interact, @RequestParam(required = false) Long id, @RequestParam(required = false) Status status) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
-            return ResponseEntity.ok("User is not logged in");
+            return ResponseEntity.badRequest().body("User is not logged in");
         }
 
         return switch (interact) {
@@ -112,12 +121,12 @@ public class ApplicationsController {
 
     private ResponseEntity<String> deleteApplication(Long id, User user) {
         if (id == null) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body("Provide application id");
         }
         Optional<Application> applicationSearch = applicationService.getById(id);
         String responseMessage = responseMessage(applicationSearch, user);
         if (!responseMessage.isEmpty()) {
-            return ResponseEntity.ok(responseMessage);
+            return ResponseEntity.badRequest().body(responseMessage);
         }
 
         Application application = applicationSearch.get();
@@ -125,15 +134,14 @@ public class ApplicationsController {
         return ResponseEntity.ok("Successfully deleted:\n" + application);
     }
 
-
     private ResponseEntity<String> updateApplication(Long id, User user, Status status) {
         if (id == null || status == null) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body("Provide application id and valid status");
         }
         Optional<Application> applicationSearch = applicationService.getById(id);
         String responseMessage = responseMessage(applicationSearch, user);
         if (!responseMessage.isEmpty()) {
-            return ResponseEntity.ok(responseMessage);
+            return ResponseEntity.badRequest().body(responseMessage);
         }
         Application application = applicationSearch.get();
         applicationService.update(application, status);

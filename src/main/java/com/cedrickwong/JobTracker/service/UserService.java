@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.Map;
 
 @Service
 public class UserService {
@@ -31,41 +30,36 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    public void update(User user, Map<String, String> updatedInfo) {
-        for (Map.Entry<String, String> entry : updatedInfo.entrySet()) {
-            switch (entry.getKey()) {
-                case "email":
-                    updateEmail(user, entry.getValue());
-                    break;
-                case "password":
-                    updatePassword(user, entry.getValue());
-                    break;
-                case "firstName":
-                    updateFirstName(user, entry.getValue());
-                    break;
-                case "lastName":
-                    updateLastName(user, entry.getValue());
+    public void update(User user, String email, String password, String firstName, String lastName) throws IllegalArgumentException {
+        if (email != null) {
+            if (!email.isEmpty()){
+                user.setEmail(email);
+            } else {
+                throw new IllegalArgumentException("Email cannot be empty string");
             }
         }
-    }
+        if (password != null) {
+            if (!password.isEmpty()) {
+                user.setPassword(password);
+            } else {
+                throw new IllegalArgumentException("Password cannot be empty string");
+            }
+        }
+        if (firstName != null) {
+            if (!firstName.isEmpty()) {
+                user.setFirstName(firstName);
+            } else {
+                throw new IllegalArgumentException("First name cannot be empty string");
+            }
+        }
+        if (lastName != null) {
+            if (!lastName.isEmpty()) {
+                user.setLastName(lastName);
+            } else {
+                throw new IllegalArgumentException("Last name cannot be empty string");
+            }
+        }
 
-    private void updateEmail(User user, String email) {
-        user.setEmail(email);
-        userRepository.updateEmail(user.getId(), email);
-    }
-
-    private void updatePassword(User user, String password) {
-        user.setPassword(password);
-        userRepository.updatePassword(user.getId(), password);
-    }
-
-    private void updateFirstName(User user, String firstName) {
-        user.setFirstName(firstName);
-        userRepository.updateFirstName(user.getId(), firstName);
-    }
-
-    private void updateLastName(User user, String lastName) {
-        user.setLastName(lastName);
-        userRepository.updateLastName(user.getId(), lastName);
+        userRepository.update(user.getId(), email, password, firstName, lastName);
     }
 }
