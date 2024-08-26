@@ -43,11 +43,11 @@ public class ApplicationsController {
             return ResponseEntity.badRequest().body("User is not logged in");
         }
 
-        if (start == null || start.isEmpty() || end == null || end.isEmpty()) {
+        if ((start == null && end != null) || (start != null && end == null) || (start != null && start.isEmpty()) || (end != null && end.isEmpty())) {
             return ResponseEntity.badRequest().body("Provide both start and end dates");
         }
 
-        return ResponseEntity.ok(applicationService.getAllByUser(user, LocalDate.parse(start), LocalDate.parse(end), companyName, jobTitle, status, type));
+        return ResponseEntity.ok(applicationService.getAllByUser(user, start == null ? null : LocalDate.parse(start), end == null ? null : LocalDate.parse(end), companyName, jobTitle, status, type));
     }
 
     @GetMapping("/app")
