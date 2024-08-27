@@ -45,7 +45,7 @@ public class ApplicationsController extends BaseController {
     }
 
     @GetMapping("/apps")
-    public ResponseEntity<?> getAllFromUser(@RequestParam(required = false) String start, @RequestParam(required = false) String end, @RequestParam(required = false) Status status, @RequestParam(required = false) Type type, @RequestParam(required = false) String companyName, @RequestParam(required = false) String jobTitle) {
+    public ResponseEntity<JsonObject> getAllFromUser(@RequestParam(required = false) String start, @RequestParam(required = false) String end, @RequestParam(required = false) Status status, @RequestParam(required = false) Type type, @RequestParam(required = false) String companyName, @RequestParam(required = false) String jobTitle) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
             return super.notLoggedInErrorResponse();
