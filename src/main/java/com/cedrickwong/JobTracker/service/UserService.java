@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 @Service
 public class UserService {
@@ -30,35 +31,21 @@ public class UserService {
         userRepository.delete(user);
     }
 
+    private void updateField(Consumer<String> setter, String value, String fieldName) {
+        if (value != null) {
+            if (!value.isEmpty()) {
+                setter.accept(value);
+            } else {
+                throw new IllegalArgumentException(fieldName + " cannot be empty string");
+            }
+        }
+    }
+
     public void update(User user, String email, String password, String firstName, String lastName) throws IllegalArgumentException {
-        if (email != null) {
-            if (!email.isEmpty()){
-                user.setEmail(email);
-            } else {
-                throw new IllegalArgumentException("Email cannot be empty string");
-            }
-        }
-        if (password != null) {
-            if (!password.isEmpty()) {
-                user.setPassword(password);
-            } else {
-                throw new IllegalArgumentException("Password cannot be empty string");
-            }
-        }
-        if (firstName != null) {
-            if (!firstName.isEmpty()) {
-                user.setFirstName(firstName);
-            } else {
-                throw new IllegalArgumentException("First name cannot be empty string");
-            }
-        }
-        if (lastName != null) {
-            if (!lastName.isEmpty()) {
-                user.setLastName(lastName);
-            } else {
-                throw new IllegalArgumentException("Last name cannot be empty string");
-            }
-        }
+        updateField(user::setEmail, email, "Email");
+        updateField(user::setPassword, password, "Password");
+        updateField(user::setFirstName, firstName, "First name");
+        updateField(user::setLastName, lastName, "Last name");
 
         userRepository.update(user.getId(), email, password, firstName, lastName);
     }
