@@ -3,6 +3,8 @@ package com.cedrickwong.JobTracker.rest;
 import com.cedrickwong.JobTracker.model.User;
 import com.cedrickwong.JobTracker.service.UserService;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import jakarta.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,99 +15,98 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/api/user")
-public class UserController {
+public class UserController extends BaseController {
 
     private final UserService userService;
     private final HttpSession httpSession;
 
     @Autowired
-    public UserController(UserService userService, HttpSession httpSession) {
+    public UserController(UserService userService, HttpSession httpSession, Gson gson) {
+        super(gson);
         this.userService = userService;
         this.httpSession = httpSession;
     }
 
     @PostMapping(path = "/login")
-    public ResponseEntity<String> login(@RequestParam String email, @RequestParam String password) {
+    public ResponseEntity<JsonObject> login(@RequestParam String email, @RequestParam String password) {
         if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
-            return ResponseEntity.ok("Please enter email and password");
+            return super.missingUserCredentialsOkResponse();
         }
 
         Optional<User> user = userService.getByEmail(email);
-        if (user.isEmpty()) {
-            return ResponseEntity.ok("Invalid email");
-        }
-        if (!user.get().getPassword().equals(password)) {
-            return ResponseEntity.ok("Invalid password");
+        if (user.isEmpty() || !user.get().getPassword().equals(password)) {
+            return super.invalidUserCredentialsOkResponse();
         }
 
         httpSession.setAttribute("user", user.get());
-        return ResponseEntity.ok("Successfully logged in:\n" + user.get());
+
+        return super.actionOkResponse("login");
     }
 
     @PostMapping(path = "/create")
-    public ResponseEntity<String> create(@RequestParam String email, @RequestParam String password, @RequestParam(required = false) String firstName, @RequestParam(required = false) String lastName) {
+    public ResponseEntity<JsonObject> create(@RequestParam String email, @RequestParam String password, @RequestParam(required = false) String firstName, @RequestParam(required = false) String lastName) {
         if (email == null || password == null) {
-            return ResponseEntity.ok("Please enter email and password");
+            return super.missingUserCredentialsOkResponse();
         }
 
         if (userService.getByEmail(email).isPresent()) {
-            return ResponseEntity.ok("User with the same email already exists");
+            return super.getOkResponse(false,"User already exists");
         }
+
         User user = new User(email, password, firstName == null ? "" : firstName, lastName == null ? "" : lastName);
         userService.save(user);
 
-        return ResponseEntity.ok("Successfully created:\n" + user);
+        return super.actionOkResponse("creation", user);
     }
 
     @PutMapping(path = "/update")
-    public ResponseEntity<String> update(@RequestParam(required = false) String email, @RequestParam(required = false) String password, @RequestParam(required = false) String firstName, @RequestParam(required = false) String lastName) {
+    public ResponseEntity<JsonObject> update(@RequestParam(required = false) String email, @RequestParam(required = false) String password, @RequestParam(required = false) String firstName, @RequestParam(required = false) String lastName) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
-            return ResponseEntity.badRequest().body("User is not logged in");
+            return super.notLoggedInErrorResponse();
         }
 
         try {
             userService.update(user, email, password, firstName, lastName);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.ok(e.getMessage());
+            return super.invalidUserCredentialsErrorResponse();
         }
 
         httpSession.setAttribute("user", user);
-
-        return ResponseEntity.ok("Successfully updated:\n" + user);
+        return super.actionOkResponse("update", user);
     }
 
     @PostMapping(path = "/delete")
-    public ResponseEntity<String> delete(@RequestParam String email, @RequestParam String password) {
-        if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
-            return ResponseEntity.badRequest().body("Please enter email and password");
-        }
-
+    public ResponseEntity<JsonObject> delete(@RequestParam String email, @RequestParam String password) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
-            return ResponseEntity.badRequest().body("User is not logged in");
+            return super.notLoggedInErrorResponse();
         }
 
-        if (!(user.getEmail().equals(email) && user.getPassword().equals(password))) {
-            return ResponseEntity.badRequest().body("Invalid email or password");
+        if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
+            return super.missingUserCredentialsOkResponse();
+        }
+
+        if (!(email.equals(user.getEmail()) && password.equals(user.getPassword()))) {
+            return super.invalidUserCredentialsErrorResponse();
         }
 
         userService.delete(user);
         httpSession.removeAttribute("user");
         httpSession.invalidate();
 
-        return ResponseEntity.ok("Successfully deleted:\n" );
+        return super.actionOkResponse("deletion", user);
     }
 
     @PostMapping(path = "/logout")
-    public ResponseEntity<String> logout() {
+    public ResponseEntity<JsonObject> logout() {
         if (httpSession.getAttribute("user") == null) {
-            return ResponseEntity.badRequest().body("User is not logged in");
+            return super.notLoggedInErrorResponse();
         }
 
         httpSession.removeAttribute("user");
         httpSession.invalidate();
 
-        return ResponseEntity.ok("Successfully logged out");
+        return super.actionOkResponse("logout");
     }
 }

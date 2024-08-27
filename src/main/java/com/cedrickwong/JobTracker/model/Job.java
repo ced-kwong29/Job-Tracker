@@ -62,6 +62,7 @@ public class Job {
                 "id=" + id +
                 ", company=" + company +
                 ", title='" + title + '\'' +
+                ", type=" + type +
                 '}';
     }
 }
