@@ -30,7 +30,6 @@ public class ApplicationsController extends BaseController {
     private final CompanyService companyService;
     private final JobService jobService;
     private final HttpSession httpSession;
-    private final Gson gson;
 
     @Autowired
     public ApplicationsController(ApplicationService applicationService, CompanyService companyService, JobService jobService, HttpSession httpSession, Gson gson) {
@@ -39,17 +38,6 @@ public class ApplicationsController extends BaseController {
         this.companyService = companyService;
         this.jobService = jobService;
         this.httpSession = httpSession;
-        this.gson = gson;
-    }
-
-    private JsonObject getApplicationJsonObject(Application application) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("id", application.getId());
-        jsonObject.addProperty("user_id", application.getUser().getId());
-        jsonObject.addProperty("job", gson.toJson(application.getJob()));
-        jsonObject.addProperty("date", application.getDate().toString());
-        jsonObject.addProperty("status", application.getStatus().toString());
-        return jsonObject;
     }
 
     private LocalDate parseDateString(String date) {
@@ -67,8 +55,7 @@ public class ApplicationsController extends BaseController {
             return super.getErrorResponse("Provide either both start and end dates or none");
         }
 
-        List<Application> applicationList = applicationService.getAllByUser(user, parseDateString(start), parseDateString(end), companyName, jobTitle, status, type);
-        return super.getOkResponse(applicationList, this::getApplicationJsonObject);
+        return super.searchOkResponse(applicationService.getAllByUser(user, parseDateString(start), parseDateString(end), companyName, jobTitle, status, type));
     }
 
 
@@ -88,30 +75,7 @@ public class ApplicationsController extends BaseController {
         }
 
         Application application = applicationSearch.get();
-        if (user.equals(application.getUser())) {
-            return super.getErrorResponse("Unauthorized access to application");
-        }
-
-        return super.getOkResponse(getApplicationJsonObject(application));
-    }
-
-    @PostMapping("/app/create")
-    public ResponseEntity<JsonObject> create(@RequestParam String companyName, @RequestParam String jobTitle, @RequestParam Type type, @RequestParam(required = false) String date, @RequestParam(required = false) Status status) {
-        User user = (User) httpSession.getAttribute("user");
-        if (user == null) {
-            return super.notLoggedInErrorResponse();
-        }
-        if (companyName == null || companyName.isEmpty() || jobTitle == null || jobTitle.isEmpty()) {
-            return super.getErrorResponse("Provide company name and job title");
-        }
-
-        Job job = companyService.getByName(companyName).map(company -> jobService.getFromCompanyByTitle(company, jobTitle)
-                                                                                .orElseGet(() -> createJob(company, jobTitle, type)))
-                                                        .orElseGet(() -> createJob(createCompany(companyName), jobTitle, type));
-
-        Application application = new Application(user, job, date == null ? LocalDate.now() : LocalDate.parse(date), status == null ? Status.WAITING : status);
-        applicationService.save(application);
-        return super.actionOkResponse("creation", application);
+        return user.equals(application.getUser()) ? super.searchOkResponse(application) : super.getErrorResponse("Unauthorized access to application");
     }
 
     private Company createCompany(String name) {
@@ -126,18 +90,34 @@ public class ApplicationsController extends BaseController {
         return job;
     }
 
-    @PostMapping("/app/{interact}")
-    public ResponseEntity<JsonObject> interact(@PathVariable String interact, @RequestParam(required = false) Long id, @RequestParam(required = false) Status status) {
+    @PostMapping("/app/{action}")
+    public ResponseEntity<JsonObject> action(@PathVariable String action, @RequestParam(required = false) String companyName, @RequestParam(required = false) String jobTitle, @RequestParam(required = false) Type type, @RequestParam(required = false) String date, @RequestParam(required = false) Status status, @RequestParam(required = false) Long id) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
             return super.notLoggedInErrorResponse();
         }
 
-        return switch (interact) {
+        return switch (action) {
+                case "create" -> createApplication(user, companyName, jobTitle, type, date, status);
                 case "delete" -> deleteApplication(id, user);
                 case "update" -> updateApplication(id, user, status);
                 default -> ResponseEntity.badRequest().build();
         };
+    }
+
+    private ResponseEntity<JsonObject> createApplication(User user, String companyName, String jobTitle, Type type, String date, Status status) {
+        if (companyName == null || companyName.isEmpty() || jobTitle == null || jobTitle.isEmpty() || type == null) {
+            return super.getErrorResponse("Provide company name and job title");
+        }
+
+        Job job = companyService.getByName(companyName).map(company -> jobService.getFromCompanyByTitle(company, jobTitle)
+                                                                                .orElseGet(() -> createJob(company, jobTitle, type)))
+                                .orElseGet(() -> createJob(createCompany(companyName), jobTitle, type));
+        System.out.println(job.getCompany());
+        Application application = new Application(user, job, date == null ? LocalDate.now() : LocalDate.parse(date), status == null ? Status.WAITING : status);
+        applicationService.save(application);
+
+        return super.actionOkResponse("creation", application);
     }
 
     private ResponseEntity<JsonObject> deleteApplication(Long id, User user) {
@@ -148,7 +128,7 @@ public class ApplicationsController extends BaseController {
         return applicationService.getById(id).filter(application -> user.equals(application.getUser()))
                                             .map(application -> {
                                                 applicationService.delete(application);
-                                                return super.getOkResponse("deletion", application);})
+                                                return super.actionOkResponse("deletion", application);})
                                             .orElseGet(() -> super.getErrorResponse("Invalid application id"));
     }
 
@@ -160,7 +140,7 @@ public class ApplicationsController extends BaseController {
         return applicationService.getById(id).filter(application -> user.equals(application.getUser()))
                                             .map(application -> {
                                                 applicationService.update(application, status);
-                                                return super.actionOkResponse("update", application);})
+                                                return super.actionOkResponse("update",application);})
                                             .orElseGet(() -> super.getErrorResponse("Invalid application id"));
     }
 }

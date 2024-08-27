@@ -69,7 +69,7 @@ public class UserController extends BaseController {
         try {
             userService.update(user, email, password, firstName, lastName);
         } catch (IllegalArgumentException e) {
-            return super.invalidUserCredentialsErrorResponse();
+            return super.getErrorResponse(e.getMessage());
         }
 
         httpSession.setAttribute("user", user);

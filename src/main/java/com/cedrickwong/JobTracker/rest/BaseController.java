@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.function.Function;
 
 @RestController
 @RequestMapping(path = "/api")
@@ -23,53 +22,56 @@ public class BaseController {
     }
 
     @GetMapping(path = "/ping")
-    public ResponseEntity<JsonObject> ping() {
+    protected ResponseEntity<JsonObject> ping() {
         return getOkResponse(true, "You have pinged the API!");
     }
 
-    protected JsonObject getOkJsonObject(boolean success, String message) {
+    private JsonObject getOkJsonObject(boolean success, String message) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("status", success ? "success" : "fail");
         jsonObject.addProperty("message", message);
         return jsonObject;
     }
 
-    protected JsonObject getOkJsonObject(String message, Object entity) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("status", "success");
-        jsonObject.addProperty("message", message);
-        jsonObject.addProperty("entity", gson.toJson(entity));
+    private <T> JsonObject getOkJsonObject(String message, List<T> itemList) {
+        JsonObject jsonObject = getOkJsonObject(true, message);
+        jsonObject.addProperty("size", itemList.size());
+
+        JsonArray jsonArray = new JsonArray();
+        for (T item : itemList) {
+            jsonArray.add(gson.toJsonTree(item));
+        }
+        jsonObject.add("items", jsonArray);
+
         return jsonObject;
     }
 
-    protected ResponseEntity<JsonObject> getOkResponse(boolean success, String message) {
-        return ResponseEntity.ok(getOkJsonObject(success, message));
-    }
-
-    protected ResponseEntity<JsonObject> getOkResponse(String message, Object entity) {
-        return ResponseEntity.ok(getOkJsonObject(message, entity));
-    }
-
-    protected <T> JsonArray getOkJsonArray(List<T> entityList, Function<T, JsonObject> jsonObjectConversion) {
-        JsonArray jsonArray = new JsonArray();
-
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("size", entityList.size());
-        jsonArray.add(jsonObject);
-
-        for (T entity : entityList) {
-            jsonArray.add(jsonObjectConversion.apply(entity));
-        }
-
-        return jsonArray;
-    }
-
-    protected <T> ResponseEntity<JsonArray> getOkResponse(List<T> entityList, Function<T, JsonObject> jsonObjectConversion) {
-        return ResponseEntity.ok(getOkJsonArray(entityList, jsonObjectConversion));
-    }
-
-    protected ResponseEntity<JsonObject> getOkResponse(JsonObject jsonObject) {
+    private ResponseEntity<JsonObject> getOkJsonObjectResponse(JsonObject jsonObject) {
         return ResponseEntity.ok(jsonObject);
+    }
+
+    protected ResponseEntity<JsonObject> getOkResponse(boolean success, String message) {
+        return getOkJsonObjectResponse(getOkJsonObject(success, message));
+    }
+
+    private <T> ResponseEntity<JsonObject> getItemizedOkResponse(String message, List<T> itemList) {
+        return getOkJsonObjectResponse(getOkJsonObject(message, itemList));
+    }
+
+    protected ResponseEntity<JsonObject> actionOkResponse(String action) {
+        return getOkResponse(true, "Successful " + action);
+    }
+
+    protected <T> ResponseEntity<JsonObject> actionOkResponse(String action, T item) {
+        return getItemizedOkResponse("Successful " + action, List.of(item));
+    }
+
+    protected <T> ResponseEntity<JsonObject> searchOkResponse(T item) {
+        return actionOkResponse("search query", item);
+    }
+
+    protected <T> ResponseEntity<JsonObject> searchOkResponse(List<T> item) {
+        return getItemizedOkResponse("Successful search query", item);
     }
 
     protected ResponseEntity<JsonObject> missingUserCredentialsOkResponse() {
@@ -80,15 +82,7 @@ public class BaseController {
         return getOkResponse(false, "Invalid email or password");
     }
 
-    protected ResponseEntity<JsonObject> actionOkResponse(String action) {
-        return getOkResponse(true, "Successful " + action);
-    }
-
-    protected ResponseEntity<JsonObject> actionOkResponse(String action, Object entity) {
-        return getOkResponse("Successful " + action, entity);
-    }
-
-    protected JsonObject getErrorJsonObject(String message) {
+    private JsonObject getErrorJsonObject(String message) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("status", "error");
         jsonObject.addProperty("message", message);
