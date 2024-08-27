@@ -45,7 +45,7 @@ public class UserController extends BaseController {
 
     @PostMapping(path = "/create")
     public ResponseEntity<JsonObject> create(@RequestParam String email, @RequestParam String password, @RequestParam(required = false) String firstName, @RequestParam(required = false) String lastName) {
-        if (email == null || password == null) {
+        if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
             return super.missingUserCredentialsOkResponse();
         }
 
