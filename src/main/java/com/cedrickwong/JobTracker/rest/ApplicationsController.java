@@ -10,8 +10,10 @@ import com.cedrickwong.JobTracker.model.Job.Type;
 import com.cedrickwong.JobTracker.service.JobService;
 import com.cedrickwong.JobTracker.model.User;
 
+import com.google.api.client.json.Json;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+
 import jakarta.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -40,24 +41,27 @@ public class ApplicationsController extends BaseController {
         this.httpSession = httpSession;
     }
 
-    private LocalDate parseDateString(String date) {
-        return date == null ? null : LocalDate.parse(date);
+    private LocalDate parseDateString(String date, LocalDate defaultValue) {
+        return date == null ? defaultValue : LocalDate.parse(date);
     }
 
     @GetMapping("/apps")
-    public ResponseEntity<JsonObject> getAllFromUser(@RequestParam(required = false) String start, @RequestParam(required = false) String end, @RequestParam(required = false) Status status, @RequestParam(required = false) Type type, @RequestParam(required = false) String companyName, @RequestParam(required = false) String jobTitle) {
+    public ResponseEntity<JsonObject> getAllFromUser(@RequestParam(required = false) String startDate, @RequestParam(required = false) String endDate, @RequestParam(required = false) Status status, @RequestParam(required = false) Type type, @RequestParam(required = false) String companyName, @RequestParam(required = false) String jobTitle) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
             return super.notLoggedInErrorResponse();
         }
 
-        if ((start == null && end != null) || (start != null && end == null) || (start != null && start.isEmpty()) || (end != null && end.isEmpty())) {
+        if ((startDate == null && endDate != null) || (startDate != null && endDate == null) || (startDate != null && startDate.isEmpty()) || (endDate != null && endDate.isEmpty())) {
             return super.getErrorResponse("Provide either both start and end dates or none");
         }
 
-        return super.searchOkResponse(applicationService.getAllByUser(user, parseDateString(start), parseDateString(end), companyName, jobTitle, status, type));
+        return super.searchOkResponse(applicationService.getAllByUser(user, parseDateString(startDate, null), parseDateString(endDate, null), companyName, jobTitle, status, type));
     }
 
+    private ResponseEntity<JsonObject> missingOrInvalidApplicationID(Long id) {
+        return super.getErrorResponse(id == null ? "Provide application id" : "Invalid application id: " + id);
+    }
 
     @GetMapping("/app")
     public ResponseEntity<JsonObject> get(@RequestParam Long id) {
@@ -67,15 +71,16 @@ public class ApplicationsController extends BaseController {
         }
 
         if (id == null) {
-            return super.getErrorResponse("Provide application id");
+            return missingOrInvalidApplicationID(null);
         }
+
         Optional<Application> applicationSearch = applicationService.getById(id);
         if (applicationSearch.isEmpty()) {
-            return super.getErrorResponse("Invalid application id");
+            return missingOrInvalidApplicationID(id);
         }
 
         Application application = applicationSearch.get();
-        return user.equals(application.getUser()) ? super.searchOkResponse(application) : super.getErrorResponse("Unauthorized access to application");
+        return user.equals(application.getUser()) ? super.searchOkResponse(application) : missingOrInvalidApplicationID(id);
     }
 
     private Company createCompany(String name) {
@@ -113,23 +118,28 @@ public class ApplicationsController extends BaseController {
         Job job = companyService.getByName(companyName).map(company -> jobService.getFromCompanyByTitle(company, jobTitle)
                                                                                 .orElseGet(() -> createJob(company, jobTitle, type)))
                                 .orElseGet(() -> createJob(createCompany(companyName), jobTitle, type));
-        System.out.println(job.getCompany());
-        Application application = new Application(user, job, date == null ? LocalDate.now() : LocalDate.parse(date), status == null ? Status.WAITING : status);
+
+        Application application = new Application(user, job, parseDateString(date, LocalDate.now()), status == null ? Status.WAITING : status);
         applicationService.save(application);
 
         return super.actionOkResponse("creation", application);
     }
 
+    private Optional<Application> checkApplicationIDAndUserCredentials(Long id,  User user) {
+        return applicationService.getById(id).filter(application -> user.equals(application.getUser()));
+    }
+
     private ResponseEntity<JsonObject> deleteApplication(Long id, User user) {
         if (id == null) {
-            return super.getErrorResponse("Provide application id");
+            return missingOrInvalidApplicationID(null);
         }
 
-        return applicationService.getById(id).filter(application -> user.equals(application.getUser()))
-                                            .map(application -> {
-                                                applicationService.delete(application);
-                                                return super.actionOkResponse("deletion", application);})
-                                            .orElseGet(() -> super.getErrorResponse("Invalid application id"));
+        return checkApplicationIDAndUserCredentials(id, user)
+                .map(application -> {
+                    applicationService.delete(application);
+                    return super.actionOkResponse("deletion", application);
+                })
+                .orElseGet(() -> missingOrInvalidApplicationID(id));
     }
 
     private ResponseEntity<JsonObject> updateApplication(Long id, User user, Status status) {
@@ -137,10 +147,11 @@ public class ApplicationsController extends BaseController {
             return super.getErrorResponse("Provide application id and status");
         }
 
-        return applicationService.getById(id).filter(application -> user.equals(application.getUser()))
-                                            .map(application -> {
-                                                applicationService.update(application, status);
-                                                return super.actionOkResponse("update",application);})
-                                            .orElseGet(() -> super.getErrorResponse("Invalid application id"));
+        return checkApplicationIDAndUserCredentials(id, user)
+                .map(application -> {
+                    applicationService.update(application, status);
+                    return super.actionOkResponse("update", application);
+                })
+                .orElseGet(() -> missingOrInvalidApplicationID(id));
     }
 }
