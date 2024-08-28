@@ -17,7 +17,7 @@ public interface JobRepository extends JpaRepository<Job, Long> {
 
     @Query("SELECT j " +
             "FROM Job j " +
-            "WHERE j.company = :company " +
-            "AND j.title = :title")
+            "WHERE j.company = :company AND " +
+                    "j.title = :title")
     Optional<Job> findByCompanyAndTitle(Company company, String title);
 }

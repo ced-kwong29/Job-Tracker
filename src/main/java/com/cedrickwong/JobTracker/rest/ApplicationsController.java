@@ -10,7 +10,6 @@ import com.cedrickwong.JobTracker.model.Job.Type;
 import com.cedrickwong.JobTracker.service.JobService;
 import com.cedrickwong.JobTracker.model.User;
 
-import com.google.api.client.json.Json;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
@@ -115,8 +114,9 @@ public class ApplicationsController extends BaseController {
             return super.getErrorResponse("Provide company name and job title");
         }
 
-        Job job = companyService.getByName(companyName).map(company -> jobService.getFromCompanyByTitle(company, jobTitle)
-                                                                                .orElseGet(() -> createJob(company, jobTitle, type)))
+        Job job = companyService.getByName(companyName)
+                                .map(company -> jobService.getFromCompanyByTitle(company, jobTitle)
+                                                        .orElseGet(() -> createJob(company, jobTitle, type)))
                                 .orElseGet(() -> createJob(createCompany(companyName), jobTitle, type));
 
         Application application = new Application(user, job, parseDateString(date, LocalDate.now()), status == null ? Status.WAITING : status);

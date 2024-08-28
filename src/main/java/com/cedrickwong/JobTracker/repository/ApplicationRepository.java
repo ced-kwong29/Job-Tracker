@@ -18,12 +18,12 @@ import java.util.List;
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
     @Query("SELECT a " +
             "FROM Application a " +
-            "WHERE a.user = :user " +
-            "AND ((:startDate IS NULL AND :endDate IS NULL) OR a.date BETWEEN :startDate AND :endDate) " +
-            "AND (:companyName IS NULL OR a.job.company.name = :companyName) " +
-            "AND (:jobTitle IS NULL OR a.job.title = :jobTitle) " +
-            "AND (:status is NULL OR a.status = :status)" +
-            "AND (:type IS NULL OR a.job.type = :type)")
+            "WHERE a.user = :user AND " +
+                "((:startDate IS NULL AND :endDate IS NULL) OR a.date BETWEEN :startDate AND :endDate) AND " +
+                "(:companyName IS NULL OR a.job.company.name = :companyName) AND " +
+                "(:jobTitle IS NULL OR a.job.title = :jobTitle) AND " +
+                "(:status is NULL OR a.status = :status) AND " +
+                "(:type IS NULL OR a.job.type = :type)")
     List<Application> findByUser(User user, LocalDate startDate, LocalDate endDate, String companyName, String jobTitle, Status status, Type type);
 
     @Modifying
