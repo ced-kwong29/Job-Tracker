@@ -5,6 +5,7 @@ import com.cedrickwong.JobTracker.service.UserService;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+
 import jakarta.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ public class UserController extends BaseController {
         }
 
         Optional<User> user = userService.getByEmail(email);
-        if (user.isEmpty() || !user.get().getPassword().equals(password)) {
+        if (user.isEmpty() || !password.equals(user.get().getPassword())) {
             return super.invalidUserCredentialsOkResponse();
         }
 
