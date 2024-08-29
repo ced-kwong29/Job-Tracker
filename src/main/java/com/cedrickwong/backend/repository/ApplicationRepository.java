@@ -1,9 +1,9 @@
-package com.cedrickwong.JobTracker.repository;
+package com.cedrickwong.backend.repository;
 
-import com.cedrickwong.JobTracker.model.Application;
-import com.cedrickwong.JobTracker.model.Application.Status;
-import com.cedrickwong.JobTracker.model.User;
-import com.cedrickwong.JobTracker.model.Job.Type;
+import com.cedrickwong.backend.model.Application;
+import com.cedrickwong.backend.model.Application.Status;
+import com.cedrickwong.backend.model.User;
+import com.cedrickwong.backend.model.Job.Type;
 
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,4 +1,4 @@
-package com.cedrickwong.JobTracker;
+package com.cedrickwong.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

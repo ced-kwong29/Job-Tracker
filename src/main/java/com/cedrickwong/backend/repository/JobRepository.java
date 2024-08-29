@@ -1,7 +1,7 @@
-package com.cedrickwong.JobTracker.repository;
+package com.cedrickwong.backend.repository;
 
-import com.cedrickwong.JobTracker.model.Company;
-import com.cedrickwong.JobTracker.model.Job;
+import com.cedrickwong.backend.model.Company;
+import com.cedrickwong.backend.model.Job;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

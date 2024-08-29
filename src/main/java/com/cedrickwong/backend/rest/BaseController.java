@@ -1,4 +1,4 @@
-package com.cedrickwong.JobTracker.rest;
+package com.cedrickwong.backend.rest;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;

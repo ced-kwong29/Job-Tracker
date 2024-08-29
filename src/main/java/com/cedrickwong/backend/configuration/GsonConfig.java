@@ -1,6 +1,6 @@
-package com.cedrickwong.JobTracker.configuration;
+package com.cedrickwong.backend.configuration;
 
-import com.cedrickwong.JobTracker.adapter.LocalDateAdapter;
+import com.cedrickwong.backend.adapter.LocalDateAdapter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

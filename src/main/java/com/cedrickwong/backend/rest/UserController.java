@@ -1,7 +1,7 @@
-package com.cedrickwong.JobTracker.rest;
+package com.cedrickwong.backend.rest;
 
-import com.cedrickwong.JobTracker.model.User;
-import com.cedrickwong.JobTracker.service.UserService;
+import com.cedrickwong.backend.model.User;
+import com.cedrickwong.backend.service.UserService;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;

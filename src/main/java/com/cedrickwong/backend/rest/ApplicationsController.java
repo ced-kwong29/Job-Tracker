@@ -1,14 +1,14 @@
-package com.cedrickwong.JobTracker.rest;
+package com.cedrickwong.backend.rest;
 
-import com.cedrickwong.JobTracker.model.Application;
-import com.cedrickwong.JobTracker.model.Application.Status;
-import com.cedrickwong.JobTracker.service.ApplicationService;
-import com.cedrickwong.JobTracker.model.Company;
-import com.cedrickwong.JobTracker.service.CompanyService;
-import com.cedrickwong.JobTracker.model.Job;
-import com.cedrickwong.JobTracker.model.Job.Type;
-import com.cedrickwong.JobTracker.service.JobService;
-import com.cedrickwong.JobTracker.model.User;
+import com.cedrickwong.backend.model.Application;
+import com.cedrickwong.backend.model.Application.Status;
+import com.cedrickwong.backend.service.ApplicationService;
+import com.cedrickwong.backend.model.Company;
+import com.cedrickwong.backend.service.CompanyService;
+import com.cedrickwong.backend.model.Job;
+import com.cedrickwong.backend.model.Job.Type;
+import com.cedrickwong.backend.service.JobService;
+import com.cedrickwong.backend.model.User;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;

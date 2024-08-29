@@ -1,7 +1,7 @@
-package com.cedrickwong.JobTracker.service;
+package com.cedrickwong.backend.service;
 
-import com.cedrickwong.JobTracker.model.User;
-import com.cedrickwong.JobTracker.repository.UserRepository;
+import com.cedrickwong.backend.model.User;
+import com.cedrickwong.backend.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
