@@ -1,7 +1,5 @@
 package com.cedrickwong.backend.configuration;
 
-import com.cedrickwong.backend.adapter.LocalDateAdapter;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 

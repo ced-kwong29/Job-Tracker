@@ -1,4 +1,4 @@
-package com.cedrickwong.backend.adapter;
+package com.cedrickwong.backend.configuration;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
