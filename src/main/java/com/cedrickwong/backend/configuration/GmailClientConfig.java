@@ -25,7 +25,7 @@ public class GmailClientConfig {
 
     private static final String applicationName = "JobTracker";
     private static final JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
-    private static final String tokens = "tokens";
+    private static final String tokensDirectoryPath = "src/main/tokens";
     private static final List<String> scopes = Collections.singletonList(GmailScopes.GMAIL_LABELS);
     private static final String credentialsFilePath = "/credentials.json";
 
@@ -37,7 +37,7 @@ public class GmailClientConfig {
 
             GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                     GoogleNetHttpTransport.newTrustedTransport(), jsonFactory, clientSecrets, scopes)
-                    .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(tokens)))
+                    .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(tokensDirectoryPath)))
                     .setAccessType("offline")
                     .build();
 
