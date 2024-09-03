@@ -1,6 +1,9 @@
 HELP.md
+
 src/main/resources/credentials.json
 src/main/tokens/
+.env
+
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
