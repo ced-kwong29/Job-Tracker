@@ -14,7 +14,7 @@ import java.util.List;
 @RequestMapping(path = "/api")
 public class BaseController {
 
-    private final Gson gson;
+    protected final Gson gson;
 
     @Autowired
     public BaseController(Gson gson) {

@@ -1,12 +1,6 @@
 package com.cedrickwong.backend.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.JoinColumn;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 
@@ -26,8 +20,12 @@ public class Application {
     @JoinColumn(name = "job_id", referencedColumnName = "id")
     private Job job;
 
-    private LocalDate date;
+    @Enumerated(EnumType.STRING)
     private Status status;
+
+    private LocalDate date;
+
+
 
     public Application() {
     }
