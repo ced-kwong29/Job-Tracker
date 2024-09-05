@@ -55,7 +55,7 @@ public class ApplicationsController extends BaseController {
             return super.getErrorResponse("Provide either both start and end dates or none");
         }
 
-        return super.searchOkResponse(applicationService.getAllByUser(user, parseDateString(startDate, null), parseDateString(endDate, null), companyName, jobTitle, status, type));
+        return super.actionOkResponse("search query", applicationService.getAllByUser(user, parseDateString(startDate, null), parseDateString(endDate, null), companyName, jobTitle, status, type));
     }
 
     private ResponseEntity<JsonObject> missingOrInvalidApplicationID(Long id) {
@@ -79,7 +79,7 @@ public class ApplicationsController extends BaseController {
         }
 
         Application application = applicationSearch.get();
-        return user.equals(application.getUser()) ? super.searchOkResponse(application) : missingOrInvalidApplicationID(id);
+        return user.equals(application.getUser()) ? super.actionOkResponse("search query", application) : missingOrInvalidApplicationID(id);
     }
 
     private Company createCompany(String name) {
@@ -110,7 +110,7 @@ public class ApplicationsController extends BaseController {
     }
 
     private ResponseEntity<JsonObject> createApplication(User user, String companyName, String jobTitle, Type type, String date, Status status) {
-        if (companyName == null || companyName.isEmpty() || jobTitle == null || jobTitle.isEmpty() || type == null) {
+        if (companyName == null || companyName.isEmpty() || jobTitle == null || jobTitle.isEmpty()) {
             return super.getErrorResponse("Provide company name and job title");
         }
 

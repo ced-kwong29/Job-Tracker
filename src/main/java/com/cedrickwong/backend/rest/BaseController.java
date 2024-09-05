@@ -22,7 +22,7 @@ public class BaseController {
     }
 
     @GetMapping(path = "/ping")
-    protected ResponseEntity<JsonObject> ping() {
+    public ResponseEntity<JsonObject> ping() {
         return getOkResponse(true, "You have pinged the API!");
     }
 
@@ -54,7 +54,7 @@ public class BaseController {
         return getOkJsonObjectResponse(getOkJsonObject(success, message));
     }
 
-    private <T> ResponseEntity<JsonObject> getItemizedOkResponse(String message, List<T> itemList) {
+    protected <T> ResponseEntity<JsonObject> getItemizedOkResponse(String message, List<T> itemList) {
         return getOkJsonObjectResponse(getOkJsonObject(message, itemList));
     }
 
@@ -66,21 +66,25 @@ public class BaseController {
         return getItemizedOkResponse("Successful " + action, List.of(item));
     }
 
-    protected <T> ResponseEntity<JsonObject> searchOkResponse(T item) {
-        return actionOkResponse("search query", item);
+    protected <T> ResponseEntity<JsonObject> actionOkResponse(String action, List<T> itemList) {
+        return getItemizedOkResponse("Successful " + action, itemList);
     }
 
-    protected <T> ResponseEntity<JsonObject> searchOkResponse(List<T> item) {
-        return getItemizedOkResponse("Successful search query", item);
-    }
+//    protected <T> ResponseEntity<JsonObject> searchOkResponse(T item) {
+//        return actionOkResponse("search query", item);
+//    }
 
-    protected ResponseEntity<JsonObject> missingUserCredentialsOkResponse() {
-        return getOkResponse(false, "Provide email and password");
-    }
+//    protected <T> ResponseEntity<JsonObject> searchOkResponse(List<T> item) {
+//        return getItemizedOkResponse("Successful search query", item);
+//    }
 
-    protected ResponseEntity<JsonObject> invalidUserCredentialsOkResponse() {
-        return getOkResponse(false, "Invalid email or password");
-    }
+//    protected ResponseEntity<JsonObject> missingUserCredentialsOkResponse() {
+//        return getOkResponse(false, "Provide email and password");
+//    }
+
+//    protected ResponseEntity<JsonObject> invalidUserCredentialsOkResponse() {
+//        return getOkResponse(false, "Invalid email or password");
+//    }
 
     private JsonObject getErrorJsonObject(String message) {
         JsonObject jsonObject = new JsonObject();
@@ -97,7 +101,7 @@ public class BaseController {
         return getErrorResponse("User not logged in");
     }
 
-    protected ResponseEntity<JsonObject> invalidUserCredentialsErrorResponse(){
-        return getErrorResponse("Invalid email or password");
-    }
+//    protected ResponseEntity<JsonObject> invalidUserCredentialsErrorResponse(){
+//        return getErrorResponse("Invalid email or password");
+//    }
 }
