@@ -28,15 +28,19 @@ public class UserController extends BaseController {
         this.httpSession = httpSession;
     }
 
+    private ResponseEntity<JsonObject> missingUserCredentialsOkResponse() {
+        return getOkResponse(false, "Provide email and password");
+    }
+
     @PostMapping(path = "/login")
     public ResponseEntity<JsonObject> login(@RequestParam String email, @RequestParam String password) {
         if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
-            return super.missingUserCredentialsOkResponse();
+            return missingUserCredentialsOkResponse();
         }
 
         Optional<User> user = userService.getByEmail(email);
         if (user.isEmpty() || !password.equals(user.get().getPassword())) {
-            return super.invalidUserCredentialsOkResponse();
+            return super.getOkResponse(false, "Invalid email or password");
         }
 
         httpSession.setAttribute("user", user.get());
@@ -47,7 +51,7 @@ public class UserController extends BaseController {
     @PostMapping(path = "/create")
     public ResponseEntity<JsonObject> create(@RequestParam String email, @RequestParam String password, @RequestParam(required = false) String firstName, @RequestParam(required = false) String lastName) {
         if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
-            return super.missingUserCredentialsOkResponse();
+            return missingUserCredentialsOkResponse();
         }
 
         if (userService.getByEmail(email).isPresent()) {
@@ -74,6 +78,7 @@ public class UserController extends BaseController {
         }
 
         httpSession.setAttribute("user", user);
+
         return super.actionOkResponse("update", user);
     }
 
@@ -85,11 +90,11 @@ public class UserController extends BaseController {
         }
 
         if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
-            return super.missingUserCredentialsOkResponse();
+            return missingUserCredentialsOkResponse();
         }
 
         if (!(email.equals(user.getEmail()) && password.equals(user.getPassword()))) {
-            return super.invalidUserCredentialsErrorResponse();
+            return super.getErrorResponse("Invalid email or password");
         }
 
         userService.delete(user);
