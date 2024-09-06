@@ -2,9 +2,10 @@ package com.cedrickwong.backend.configuration;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
 import org.springframework.web.reactive.function.client.WebClient;
 
-import reactor.core.publisher.Mono;
+import java.util.Optional;
 
 public class ParseurClient {
 
@@ -14,12 +15,10 @@ public class ParseurClient {
         this.webClient = webClient;
     }
 
-    public Mono<JsonObject> fetchData(String endpoint) {
-        return this.webClient.get().uri(endpoint)
-                                    .retrieve()
-                                    .bodyToMono(String.class)
-                                    .map(response -> JsonParser.parseString(response).getAsJsonObject())
-                                    .doOnNext(response -> System.out.println("Response: " + response))
-                                    .doOnError(error -> System.err.println("Error: " + error.getMessage()));
+    public Optional<JsonObject> fetchData(String mailboxId) {
+        return webClient.get().uri("/parser/" + mailboxId + "/document_set").retrieve()
+                                                                                .bodyToMono(String.class)
+                                                                                .map(responseString -> JsonParser.parseString(responseString).getAsJsonObject())
+                                                                                .blockOptional();
     }
 }
