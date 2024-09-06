@@ -11,8 +11,10 @@ import com.cedrickwong.backend.service.JobService;
 import com.cedrickwong.backend.service.ParseurService;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import com.google.gson.JsonParser;
 import jakarta.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,19 +62,21 @@ public class ParseurController extends BaseController {
         return job;
     }
 
-    private Status processParsedStatus(String parsedStatus) {
-        parsedStatus = parsedStatus.toLowerCase();
-        if (parsedStatus.contains("interview")) {
-            return Status.INTERVIEWING;
-        }
-        if (parsedStatus.contains("offer")) {
-            return Status.OFFERED;
-        }
-        if (parsedStatus.contains("assessment")) {
-            return Status.ASSESSMENT;
-        }
-        if (parsedStatus.contains("accept")) {
-            return Status.ACCEPTED;
+    private Status processParsedStatus(JsonElement status) {
+        if (status != null) {
+            String parsedStatus = status.getAsString().toLowerCase();
+            if (parsedStatus.contains("interview")) {
+                return Status.INTERVIEWING;
+            }
+            if (parsedStatus.contains("offer")) {
+                return Status.OFFERED;
+            }
+            if (parsedStatus.contains("assessment")) {
+                return Status.ASSESSMENT;
+            }
+            if (parsedStatus.contains("accept")) {
+                return Status.ACCEPTED;
+            }
         }
 
         return Status.WAITING;
@@ -89,7 +93,8 @@ public class ParseurController extends BaseController {
             List<Application> parsedApplications = new ArrayList<>();
 
             parseurService.getDocuments(id).forEach(jsonElement -> {
-                JsonObject jsonObject = (JsonObject) jsonElement;
+                JsonObject jsonObject = JsonParser.parseString(jsonElement.getAsJsonObject().get("result").getAsString())
+                                                    .getAsJsonObject();
 
                 String jobTitle = jsonObject.get("JobRole").getAsString();
                 String companyName = jsonObject.get("JobCompany").getAsString();
@@ -103,7 +108,7 @@ public class ParseurController extends BaseController {
                                                             .atZone(ZoneId.systemDefault())
                                                             .toLocalDate();
 
-                Status status = processParsedStatus(jsonObject.get("Status").getAsString());
+                Status status = processParsedStatus(jsonObject.get("Status"));
 
                 Application application = new Application(user, job, date, status);
                 applicationService.save(application);

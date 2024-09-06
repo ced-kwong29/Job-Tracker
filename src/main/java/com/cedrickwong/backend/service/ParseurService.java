@@ -32,7 +32,7 @@ public class ParseurService {
         JsonArray jsonArray = documentsJsonObject.get().getAsJsonArray("results");
         for (JsonElement jsonElement : jsonArray) {
             JsonObject documentJsonObject = JsonParser.parseString(jsonElement.getAsJsonObject().get("result").getAsString())
-                                                .getAsJsonObject();
+                                                        .getAsJsonObject();
 
             if (!(documentJsonObject.has("JobRole")) && documentJsonObject.has("JobCompany") && documentJsonObject.has("Received")) {
                 jsonArray.remove(jsonElement);
