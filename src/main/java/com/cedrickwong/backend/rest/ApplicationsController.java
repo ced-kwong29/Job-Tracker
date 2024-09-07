@@ -93,20 +93,19 @@ public class ApplicationsController extends BaseController {
     private Job findOrCreateCompanyAndJob(String companyName, String jobTitle, Type type) {
         return companyService.getByName(companyName)
                                 .map(company -> jobService.getFromCompanyByTitle(company, jobTitle)
-                                                            .orElseGet(() -> createJob(company, jobTitle, type))
-                                )
+                                                            .orElseGet(() -> createJob(company, jobTitle, type)))
                                 .orElseGet(() -> createJob(createCompany(companyName), jobTitle, type));
     }
 
     @PostMapping(path = "/create")
-    public ResponseEntity<JsonObject> create(@RequestParam String companyName, @RequestParam String jobTitle, @RequestParam(required = false) String date, @RequestParam(required = false) Type type, @RequestParam(required = false) Status status) {
+    public ResponseEntity<JsonObject> create(@RequestParam String companyName, @RequestParam String jobTitle, @RequestParam Type type, @RequestParam(required = false) String date, @RequestParam(required = false) Status status) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
             return super.notLoggedInErrorResponse();
         }
 
         if (companyName.isEmpty() || jobTitle.isEmpty()) {
-            return super.getErrorResponse("Company name and job title can not be empty string");
+            return super.getErrorResponse("Company name and job title can not be empty strings");
         }
 
         Application application = new Application(user, findOrCreateCompanyAndJob(companyName, jobTitle, type), parseDateString(date, LocalDate.now()), status == null ? Status.WAITING : status);
@@ -135,7 +134,7 @@ public class ApplicationsController extends BaseController {
     }
 
     @PostMapping(path = "/{id}/update")
-    public ResponseEntity<JsonObject> update(@PathVariable Long id, @RequestParam(required = false) String companyName, @RequestParam(required = false) String jobTitle, @RequestParam(required = false) Type type, @RequestParam(required = false) String date, @RequestParam(required = false) Status status) {
+    public ResponseEntity<JsonObject> update(@PathVariable Long id, @RequestParam String companyName, @RequestParam String jobTitle, @RequestParam(required = false) Type type, @RequestParam(required = false) String date, @RequestParam(required = false) Status status) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
             return super.notLoggedInErrorResponse();
@@ -150,26 +149,28 @@ public class ApplicationsController extends BaseController {
                                             return super.getErrorResponse("Job title can not be empty string");
                                         }
 
-                                        Job applicationJob, updatedJobByTitle;
-                                        Company updatedCompanyByName;
-
-                                        if (jobTitle == null) {
-                                            updatedCompanyByName = companyName == null ? null : companyService.getByName(companyName)
-                                                                                                                .orElseGet(() -> createCompany(companyName));
-                                            applicationJob = application.getJob();
-                                            updatedJobByTitle = null;
-                                        } else {
-                                            Company queriedCompany = companyName == null ? application.getJob().getCompany() : companyService.getByName(companyName)
-                                                                                                                                                .orElseGet(() -> createCompany(companyName));
-                                            updatedCompanyByName = queriedCompany.equals(application.getJob().getCompany()) ? null : queriedCompany;
-                                            applicationJob = jobService.getFromCompanyByTitle(queriedCompany, jobTitle)
-                                                                        .orElseGet(application::getJob);
-                                            updatedJobByTitle = applicationJob.equals(application.getJob()) ? null : applicationJob;
+                                        if (jobTitle == null && companyName == null) {
+                                            jobService.update(application.getJob(), null, type, null);
+                                            applicationService.update(application, null, parseDateString(date, null), status);
+                                        } else if (jobTitle != null && companyName == null) {
+                                            Company company = application.getJob().getCompany();
+                                            Job job = jobService.getFromCompanyByTitle(company, jobTitle)
+                                                                .orElseGet(() -> createJob(company, jobTitle, type));
                                         }
 
-                                        jobService.update(applicationJob, updatedCompanyByName, type, jobTitle);
-                                        applicationService.update(application, updatedJobByTitle, parseDateString(date, null), status);
+                                        Job job;
 
+
+//                                        if (jobTitle == null && companyName == null) {
+//                                            job = application.getJob();
+//                                            jobService.update(job, null, type, null);
+//                                        } else if (jobTitle == null && companyName != null) {
+//                                            String title = application.getJob().getTitle();
+//
+//                                        }
+
+
+//                                        applicationService.update(application, null, parseDateString(date, null), status);
                                         return super.actionOkResponse("update", application);
                 })
                 .orElseGet(() -> invalidApplicationID(id));

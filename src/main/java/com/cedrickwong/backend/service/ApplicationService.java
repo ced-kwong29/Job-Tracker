@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 @Service
 public class ApplicationService {
@@ -44,6 +43,7 @@ public class ApplicationService {
     public void update(Application application, Job job, LocalDate date, Status status) {
         if (job != null) {
             application.setJob(job);
+            applicationRepository.updateJob(application.getId(), job);
         }
         if (date != null) {
             application.setDate(date);
@@ -51,6 +51,6 @@ public class ApplicationService {
         if (status != null) {
             application.setStatus(status);
         }
-        applicationRepository.update(application.getId(), job, date, status);
+        applicationRepository.update(application.getId(), date, status);
     }
 }

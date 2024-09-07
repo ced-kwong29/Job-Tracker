@@ -29,10 +29,16 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     @Modifying
     @Transactional
+    @Query("UPDATE Application a " +
+            "SET a.job = :job " +
+            "WHERE a.id = :id")
+    void updateJob(Long id, Job job);
+
+    @Modifying
+    @Transactional
     @Query("Update Application a " +
-            "SET a.job = CASE WHEN :job IS NOT NULL THEN :job ELSE a.job END, " +
-                "a.date = CASE WHEN :date IS NOT NULL THEN :date ELSE a.date END, " +
+            "SET a.date = CASE WHEN :date IS NOT NULL THEN :date ELSE a.date END, " +
                 "a.status = CASE WHEN :status IS NOT NULL THEN :status ELSE a.status END " +
             "WHERE a.id = :id")
-    void update(Long id, Job job, LocalDate date, Status status);
+    void update(Long id, LocalDate date, Status status);
 }
