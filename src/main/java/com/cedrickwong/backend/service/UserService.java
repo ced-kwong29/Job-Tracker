@@ -33,11 +33,10 @@ public class UserService {
 
     private void updateField(Consumer<String> setter, String value, String fieldName) {
         if (value != null) {
-            if (!value.isEmpty()) {
-                setter.accept(value);
-            } else {
+            if (value.isEmpty()) {
                 throw new IllegalArgumentException(fieldName + " cannot be empty string");
             }
+            setter.accept(value);
         }
     }
 

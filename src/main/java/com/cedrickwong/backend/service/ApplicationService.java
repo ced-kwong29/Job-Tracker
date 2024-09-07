@@ -2,6 +2,7 @@ package com.cedrickwong.backend.service;
 
 import com.cedrickwong.backend.model.Application;
 import com.cedrickwong.backend.model.Application.Status;
+import com.cedrickwong.backend.model.Job;
 import com.cedrickwong.backend.model.User;
 import com.cedrickwong.backend.model.Job.Type;
 import com.cedrickwong.backend.repository.ApplicationRepository;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 @Service
 public class ApplicationService {
@@ -39,8 +41,16 @@ public class ApplicationService {
         applicationRepository.delete(application);
     }
 
-    public void update(Application application, Application.Status status) {
-        application.setStatus(status);
-        applicationRepository.updateStatus(application.getId(), status);
+    public void update(Application application, Job job, LocalDate date, Status status) {
+        if (job != null) {
+            application.setJob(job);
+        }
+        if (date != null) {
+            application.setDate(date);
+        }
+        if (status != null) {
+            application.setStatus(status);
+        }
+        applicationRepository.update(application.getId(), job, date, status);
     }
 }

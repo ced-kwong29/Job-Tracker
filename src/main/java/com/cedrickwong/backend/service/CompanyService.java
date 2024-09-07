@@ -29,4 +29,9 @@ public class CompanyService {
     public void delete(Company company) {
         companyRepository.delete(company);
     }
+
+    public void update(Company company, String name) {
+        company.setName(name);
+        companyRepository.update(company.getId(), name);
+    }
 }

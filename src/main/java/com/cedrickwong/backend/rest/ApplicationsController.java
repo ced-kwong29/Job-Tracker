@@ -44,7 +44,7 @@ public class ApplicationsController extends BaseController {
         return date == null ? defaultValue : LocalDate.parse(date);
     }
 
-    @GetMapping("/apps")
+    @GetMapping("/list")
     public ResponseEntity<JsonObject> getAllFromUser(@RequestParam(required = false) String startDate, @RequestParam(required = false) String endDate, @RequestParam(required = false) Status status, @RequestParam(required = false) Type type, @RequestParam(required = false) String companyName, @RequestParam(required = false) String jobTitle) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
@@ -58,28 +58,24 @@ public class ApplicationsController extends BaseController {
         return super.actionOkResponse("search query", applicationService.getAllByUser(user, parseDateString(startDate, null), parseDateString(endDate, null), companyName, jobTitle, status, type));
     }
 
-    private ResponseEntity<JsonObject> missingOrInvalidApplicationID(Long id) {
-        return super.getErrorResponse(id == null ? "Provide application id" : "Invalid application id: " + id);
+    private ResponseEntity<JsonObject> invalidApplicationID(Long id) {
+        return super.getErrorResponse("Invalid application id: " + id);
     }
 
-    @GetMapping("/app")
-    public ResponseEntity<JsonObject> get(@RequestParam Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<JsonObject> get(@PathVariable Long id) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
             return super.notLoggedInErrorResponse();
         }
 
-        if (id == null) {
-            return missingOrInvalidApplicationID(null);
-        }
-
         Optional<Application> applicationSearch = applicationService.getById(id);
         if (applicationSearch.isEmpty()) {
-            return missingOrInvalidApplicationID(id);
+            return invalidApplicationID(id);
         }
 
         Application application = applicationSearch.get();
-        return user.equals(application.getUser()) ? super.actionOkResponse("search query", application) : missingOrInvalidApplicationID(id);
+        return user.equals(application.getUser()) ? super.actionOkResponse("search query", application) : invalidApplicationID(id);
     }
 
     private Company createCompany(String name) {
@@ -94,64 +90,88 @@ public class ApplicationsController extends BaseController {
         return job;
     }
 
-    @PostMapping("/app/{action}")
-    public ResponseEntity<JsonObject> action(@PathVariable String action, @RequestParam(required = false) String companyName, @RequestParam(required = false) String jobTitle, @RequestParam(required = false) Type type, @RequestParam(required = false) String date, @RequestParam(required = false) Status status, @RequestParam(required = false) Long id) {
+    private Job findOrCreateCompanyAndJob(String companyName, String jobTitle, Type type) {
+        return companyService.getByName(companyName)
+                                .map(company -> jobService.getFromCompanyByTitle(company, jobTitle)
+                                                            .orElseGet(() -> createJob(company, jobTitle, type))
+                                )
+                                .orElseGet(() -> createJob(createCompany(companyName), jobTitle, type));
+    }
+
+    @PostMapping(path = "/create")
+    public ResponseEntity<JsonObject> create(@RequestParam String companyName, @RequestParam String jobTitle, @RequestParam(required = false) String date, @RequestParam(required = false) Type type, @RequestParam(required = false) Status status) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
             return super.notLoggedInErrorResponse();
         }
 
-        return switch (action) {
-                case "create" -> createApplication(user, companyName, jobTitle, type, date, status);
-                case "delete" -> deleteApplication(id, user);
-                case "update" -> updateApplication(id, user, status);
-                default -> ResponseEntity.badRequest().build();
-        };
-    }
-
-    private ResponseEntity<JsonObject> createApplication(User user, String companyName, String jobTitle, Type type, String date, Status status) {
-        if (companyName == null || companyName.isEmpty() || jobTitle == null || jobTitle.isEmpty()) {
-            return super.getErrorResponse("Provide company name and job title");
+        if (companyName.isEmpty() || jobTitle.isEmpty()) {
+            return super.getErrorResponse("Company name and job title can not be empty string");
         }
 
-        Job job = companyService.getByName(companyName)
-                                .map(company -> jobService.getFromCompanyByTitle(company, jobTitle)
-                                                        .orElseGet(() -> createJob(company, jobTitle, type)))
-                                .orElseGet(() -> createJob(createCompany(companyName), jobTitle, type));
-
-        Application application = new Application(user, job, parseDateString(date, LocalDate.now()), status == null ? Status.WAITING : status);
+        Application application = new Application(user, findOrCreateCompanyAndJob(companyName, jobTitle, type), parseDateString(date, LocalDate.now()), status == null ? Status.WAITING : status);
         applicationService.save(application);
 
         return super.actionOkResponse("creation", application);
     }
 
-    private Optional<Application> checkApplicationIDAndUserCredentials(Long id,  User user) {
+    @PostMapping(path = "/{id}/delete")
+    public ResponseEntity<JsonObject> delete(@PathVariable Long id) {
+        User user = (User) httpSession.getAttribute("user");
+        if (user == null) {
+            return super.notLoggedInErrorResponse();
+        }
+
+        return checkApplicationIDAndUserCredentials(id, user)
+                .map(application -> {
+                                        applicationService.delete(application);
+                                        return super.actionOkResponse("deletion", application);
+                })
+                .orElseGet(() -> invalidApplicationID(id));
+    }
+
+    private Optional<Application> checkApplicationIDAndUserCredentials(Long id, User user) {
         return applicationService.getById(id).filter(application -> user.equals(application.getUser()));
     }
 
-    private ResponseEntity<JsonObject> deleteApplication(Long id, User user) {
-        if (id == null) {
-            return missingOrInvalidApplicationID(null);
+    @PostMapping(path = "/{id}/update")
+    public ResponseEntity<JsonObject> update(@PathVariable Long id, @RequestParam(required = false) String companyName, @RequestParam(required = false) String jobTitle, @RequestParam(required = false) Type type, @RequestParam(required = false) String date, @RequestParam(required = false) Status status) {
+        User user = (User) httpSession.getAttribute("user");
+        if (user == null) {
+            return super.notLoggedInErrorResponse();
         }
 
         return checkApplicationIDAndUserCredentials(id, user)
                 .map(application -> {
-                    applicationService.delete(application);
-                    return super.actionOkResponse("deletion", application);
-                })
-                .orElseGet(() -> missingOrInvalidApplicationID(id));
-    }
+                                        if (companyName != null && companyName.isEmpty()) {
+                                            return super.getErrorResponse("Company name can not be empty string");
+                                        }
+                                        if (jobTitle != null && jobTitle.isEmpty()) {
+                                            return super.getErrorResponse("Job title can not be empty string");
+                                        }
 
-    private ResponseEntity<JsonObject> updateApplication(Long id, User user, Status status) {
-        if (id == null || status == null) {
-            return super.getErrorResponse("Provide application id and status");
-        }
+                                        Job applicationJob, updatedJobByTitle;
+                                        Company updatedCompanyByName;
 
-        return checkApplicationIDAndUserCredentials(id, user)
-                .map(application -> {
-                    applicationService.update(application, status);
-                    return super.actionOkResponse("update", application);
+                                        if (jobTitle == null) {
+                                            updatedCompanyByName = companyName == null ? null : companyService.getByName(companyName)
+                                                                                                                .orElseGet(() -> createCompany(companyName));
+                                            applicationJob = application.getJob();
+                                            updatedJobByTitle = null;
+                                        } else {
+                                            Company queriedCompany = companyName == null ? application.getJob().getCompany() : companyService.getByName(companyName)
+                                                                                                                                                .orElseGet(() -> createCompany(companyName));
+                                            updatedCompanyByName = queriedCompany.equals(application.getJob().getCompany()) ? null : queriedCompany;
+                                            applicationJob = jobService.getFromCompanyByTitle(queriedCompany, jobTitle)
+                                                                        .orElseGet(application::getJob);
+                                            updatedJobByTitle = applicationJob.equals(application.getJob()) ? null : applicationJob;
+                                        }
+
+                                        jobService.update(applicationJob, updatedCompanyByName, type, jobTitle);
+                                        applicationService.update(application, updatedJobByTitle, parseDateString(date, null), status);
+
+                                        return super.actionOkResponse("update", application);
                 })
-                .orElseGet(() -> missingOrInvalidApplicationID(id));
+                .orElseGet(() -> invalidApplicationID(id));
     }
 }

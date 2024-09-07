@@ -37,21 +37,6 @@ public class ParseurService {
             if (!(documentJsonObject.has("JobRole")) && documentJsonObject.has("JobCompany") && documentJsonObject.has("Received")) {
                 jsonArray.remove(jsonElement);
             }
-
-//            String jobTitle = documentJsonObject.get("JobTitle").getAsString();
-//            String companyName = documentJsonObject.get("JobCompany").getAsString();
-//            String date = documentJsonObject.get("Received").getAsString();
-//
-//            JsonObject jsonObject = new JsonObject();
-//            jsonObject.addProperty("jobTitle", jobTitle);
-//            jsonObject.addProperty("companyName", companyName);
-//            jsonObject.addProperty("date", date);
-//
-//            if (documentJsonObject.has("Status")) {
-//                jsonObject.addProperty("status", documentJsonObject.get("Status").getAsString());
-//            }
-//
-//            jsonArray.add(jsonObject);
         }
 
         return jsonArray;
