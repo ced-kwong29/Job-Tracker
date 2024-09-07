@@ -2,6 +2,7 @@ package com.cedrickwong.backend.repository;
 
 import com.cedrickwong.backend.model.Application;
 import com.cedrickwong.backend.model.Application.Status;
+import com.cedrickwong.backend.model.Job;
 import com.cedrickwong.backend.model.User;
 import com.cedrickwong.backend.model.Job.Type;
 
@@ -29,7 +30,9 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     @Modifying
     @Transactional
     @Query("Update Application a " +
-            "SET a.status = :status " +
+            "SET a.job = CASE WHEN :job IS NOT NULL THEN :job ELSE a.job END, " +
+                "a.date = CASE WHEN :date IS NOT NULL THEN :date ELSE a.date END, " +
+                "a.status = CASE WHEN :status IS NOT NULL THEN :status ELSE a.status END " +
             "WHERE a.id = :id")
-    void updateStatus(Long id, Status status);
+    void update(Long id, Job job, LocalDate date, Status status);
 }
