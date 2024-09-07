@@ -22,14 +22,20 @@ public interface JobRepository extends JpaRepository<Job, Long> {
             "FROM Job j " +
             "WHERE j.company = :company AND " +
                     "j.title = :title")
-    Optional<Job> findByCompanyAndTitle(Company company, String title);
+    Optional<Job> findByCompanyTitleType(Company company, String title);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Job j " +
+            "SET j.company = :company " +
+            "WHERE j.id = :id")
+    void updateCompany(Long id, Company company);
 
     @Modifying
     @Transactional
     @Query("Update Job j " +
-            "SET j.company = CASE WHEN :company IS NOT NULL THEN :company ELSE j.company END, " +
-                "j.title = CASE WHEN :title IS NOT NULL THEN :title ELSE j.title END, " +
+            "SET j.title = CASE WHEN :title IS NOT NULL THEN :title ELSE j.title END, " +
                 "j.type = CASE WHEN :type IS NOT NULL THEN :type ELSE j.type END " +
             "WHERE j.id = :id")
-    void update(Long id, Company company, String title, Type type);
+    void update(Long id, String title, Type type);
 }
