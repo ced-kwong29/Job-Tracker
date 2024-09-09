@@ -63,6 +63,7 @@ public class Job {
         PART_TIME,
         CONTRACT,
         INTERNSHIP,
+        UNKNOWN
     }
 
     @Override

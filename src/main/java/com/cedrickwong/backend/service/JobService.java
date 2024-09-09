@@ -33,8 +33,8 @@ public class JobService {
         return jobRepository.findByCompany(company);
     }
 
-    public Optional<Job> getFromCompanyByTitle(Company company, String title) {
-        return jobRepository.findByCompanyTitleType(company, title);
+    public Optional<Job> getByCompanyTitleType(Company company, String title, Type type) {
+        return jobRepository.findByCompanyTitleType(company, title, type);
     }
 
     public void save(Job job) {
@@ -48,7 +48,6 @@ public class JobService {
     public void update(Job job, Company company, Type type, String title) {
         if (company != null) {
             job.setCompany(company);
-            jobRepository.updateCompany(job.getId(), company);
         }
         if (title != null) {
             job.setTitle(title);
@@ -56,7 +55,7 @@ public class JobService {
         if (type != null) {
             job.setType(type);
         }
-        jobRepository.update(job.getId(), title, type);
+        jobRepository.update(job.getId(), company, title, type);
     }
 
     public void deleteAllFromCompany(Company company) {

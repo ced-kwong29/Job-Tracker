@@ -2,6 +2,7 @@ package com.cedrickwong.backend.service;
 
 import com.cedrickwong.backend.model.Application;
 import com.cedrickwong.backend.model.Application.Status;
+import com.cedrickwong.backend.model.Company;
 import com.cedrickwong.backend.model.Job;
 import com.cedrickwong.backend.model.User;
 import com.cedrickwong.backend.model.Job.Type;
@@ -32,6 +33,14 @@ public class ApplicationService {
         return applicationRepository.findByUser(user, startDate, endDate, companyName, jobTitle, status, type);
     }
 
+    public List<Application> getAllByJobTitle(String jobTitle) {
+        return applicationRepository.findByJobTitle(jobTitle);
+    }
+
+    public int getCountByCompanyAndJobTitle(Company company, String jobTitle) {
+        return applicationRepository.findCountByCompanyAndJobTitle(company, jobTitle);
+    }
+
     public void save(Application application) {
         applicationRepository.save(application);
     }
@@ -43,7 +52,6 @@ public class ApplicationService {
     public void update(Application application, Job job, LocalDate date, Status status) {
         if (job != null) {
             application.setJob(job);
-            applicationRepository.updateJob(application.getId(), job);
         }
         if (date != null) {
             application.setDate(date);
@@ -51,6 +59,6 @@ public class ApplicationService {
         if (status != null) {
             application.setStatus(status);
         }
-        applicationRepository.update(application.getId(), date, status);
+        applicationRepository.update(application.getId(), job, date, status);
     }
 }
