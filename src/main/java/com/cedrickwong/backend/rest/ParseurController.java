@@ -100,7 +100,7 @@ public class ParseurController extends BaseController {
                 String companyName = jsonObject.get("JobCompany").getAsString();
 
                 Job job = companyService.getByName(companyName)
-                                        .map(company -> jobService.getFromCompanyByTitle(company, jobTitle)
+                                        .map(company -> jobService.getByCompanyTitleType(company, jobTitle, null)
                                                                     .orElseGet(() -> createJob(company, jobTitle)))
                                         .orElseGet(() -> createJob(createCompany(companyName), jobTitle));
 

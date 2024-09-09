@@ -92,13 +92,13 @@ public class ApplicationsController extends BaseController {
 
     private Job findOrCreateCompanyAndJob(String companyName, String jobTitle, Type type) {
         return companyService.getByName(companyName)
-                                .map(company -> jobService.getFromCompanyByTitle(company, jobTitle)
+                                .map(company -> jobService.getByCompanyTitleType(company, jobTitle, type)
                                                             .orElseGet(() -> createJob(company, jobTitle, type)))
                                 .orElseGet(() -> createJob(createCompany(companyName), jobTitle, type));
     }
 
     @PostMapping(path = "/create")
-    public ResponseEntity<JsonObject> create(@RequestParam String companyName, @RequestParam String jobTitle, @RequestParam Type type, @RequestParam(required = false) String date, @RequestParam(required = false) Status status) {
+    public ResponseEntity<JsonObject> create(@RequestParam String companyName, @RequestParam String jobTitle, @RequestParam(required = false) Type type, @RequestParam(required = false) String date, @RequestParam(required = false) Status status) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
             return super.notLoggedInErrorResponse();
@@ -108,7 +108,7 @@ public class ApplicationsController extends BaseController {
             return super.getErrorResponse("Company name and job title can not be empty strings");
         }
 
-        Application application = new Application(user, findOrCreateCompanyAndJob(companyName, jobTitle, type), parseDateString(date, LocalDate.now()), status == null ? Status.WAITING : status);
+        Application application = new Application(user, findOrCreateCompanyAndJob(companyName, jobTitle, type == null ? Type.UNKNOWN : type), parseDateString(date, LocalDate.now()), status == null ? Status.WAITING : status);
         applicationService.save(application);
 
         return super.actionOkResponse("creation", application);
@@ -134,7 +134,7 @@ public class ApplicationsController extends BaseController {
     }
 
     @PostMapping(path = "/{id}/update")
-    public ResponseEntity<JsonObject> update(@PathVariable Long id, @RequestParam String companyName, @RequestParam String jobTitle, @RequestParam(required = false) Type type, @RequestParam(required = false) String date, @RequestParam(required = false) Status status) {
+    public ResponseEntity<JsonObject> update(@PathVariable Long id, @RequestParam(required = false) String companyName, @RequestParam(required = false) String jobTitle, @RequestParam(required = false) Type type, @RequestParam(required = false) String date, @RequestParam(required = false) Status status) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
             return super.notLoggedInErrorResponse();
@@ -142,35 +142,80 @@ public class ApplicationsController extends BaseController {
 
         return checkApplicationIDAndUserCredentials(id, user)
                 .map(application -> {
-                                        if (companyName != null && companyName.isEmpty()) {
-                                            return super.getErrorResponse("Company name can not be empty string");
-                                        }
-                                        if (jobTitle != null && jobTitle.isEmpty()) {
-                                            return super.getErrorResponse("Job title can not be empty string");
+                                        if (companyName != null && companyName.isEmpty() || jobTitle != null && jobTitle.isEmpty()) {
+                                            return super.getErrorResponse("Company name and job title can not be empty strings");
                                         }
 
-                                        if (jobTitle == null && companyName == null) {
-                                            jobService.update(application.getJob(), null, type, null);
-                                            applicationService.update(application, null, parseDateString(date, null), status);
-                                        } else if (jobTitle != null && companyName == null) {
-                                            Company company = application.getJob().getCompany();
-                                            Job job = jobService.getFromCompanyByTitle(company, jobTitle)
-                                                                .orElseGet(() -> createJob(company, jobTitle, type));
+                                        Job currentJob = application.getJob();
+                                        Company currentCompany = currentJob.getCompany();
+
+                                        Job newJob;
+
+                                        if (jobTitle != null && companyName != null){
+                                            Type newType = type != null ? type : currentJob.getType();
+                                            // find a company with a matching name
+                                            Company company = companyService.getByName(companyName)
+                                                                            .orElseGet(() -> {
+                                                                                                // edit the company name if it is associated with just one application in the database
+                                                                                                // otherwise create a new company
+                                                                                                if (applicationService.getCountByCompanyAndJobTitle(currentCompany, null) == 1) {
+                                                                                                    companyService.update(currentCompany, companyName);
+                                                                                                    return currentCompany;
+                                                                                                }
+                                                                                                return createCompany(companyName);
+                                                                            });
+
+                                            if (company.equals(currentCompany)) {
+                                                // edit the job title if the current company was just renamed
+                                                jobService.update(currentJob, null, type, jobTitle);
+                                                newJob = null;
+                                            } else {
+                                                newJob = jobService.getByCompanyTitleType(company, jobTitle, newType)
+                                                                    .orElseGet(() -> createJob(company, jobTitle, newType));
+                                            }
+
+
+
+                                        } else if (jobTitle != null) {
+                                            Type jobType = type != null ? type : currentJob.getType();
+
+                                            newJob = jobService.getByCompanyTitleType(currentCompany, jobTitle, jobType)
+                                                                .map(foundJob -> {
+                                                                                    if (applicationService.getCountByCompanyAndJobTitle(currentCompany, currentJob.getTitle()) == 0) {
+                                                                                        jobService.update(currentJob, null, type, jobTitle);
+                                                                                        return null;
+                                                                                    }
+                                                                                    return foundJob;
+                                                                })
+                                                                .orElseGet(() -> createJob(currentCompany, jobTitle, jobType));
+
+                                        } else if (companyName != null) {
+                                            String currentTitle = currentJob.getTitle();
+                                            Type jobType = type != null ? type : currentJob.getType();
+                                            Company newCompany = companyService.getByName(companyName)
+                                                                            .map(foundCompany -> {
+                                                                                                    if (applicationService.getCountByCompanyAndJobTitle(currentCompany, currentTitle) <= 1) {
+                                                                                                        currentCompany.setName(companyName);
+                                                                                                        return currentCompany;
+                                                                                                    }
+                                                                                                    return foundCompany;
+                                                                            })
+                                                                            .orElseGet(() -> createCompany(companyName));
+
+                                            newJob = jobService.getByCompanyTitleType(newCompany, currentTitle, jobType)
+                                                            .orElseGet(() -> createJob(newCompany, currentTitle, jobType));
+                                        } else {
+                                            if (type != null) {
+                                                String title = currentJob.getTitle();
+                                                Company company = currentJob.getCompany();
+
+                                                newJob = jobService.getByCompanyTitleType(company, title, type)
+                                                                .orElseGet(() -> createJob(company, title, type));
+                                            } else {
+                                                newJob = null;
+                                            }
                                         }
-
-                                        Job job;
-
-
-//                                        if (jobTitle == null && companyName == null) {
-//                                            job = application.getJob();
-//                                            jobService.update(job, null, type, null);
-//                                        } else if (jobTitle == null && companyName != null) {
-//                                            String title = application.getJob().getTitle();
-//
-//                                        }
-
-
-//                                        applicationService.update(application, null, parseDateString(date, null), status);
+                                        applicationService.update(application, newJob, parseDateString(date, null), status);
                                         return super.actionOkResponse("update", application);
                 })
                 .orElseGet(() -> invalidApplicationID(id));
