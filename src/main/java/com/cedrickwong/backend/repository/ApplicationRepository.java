@@ -37,7 +37,7 @@ public interface ApplicationRepository extends JpaRepository<Application, Long>{
             "FROM Application a " +
             "WHERE a.job.company = :company AND " +
                     "(:jobTitle IS NULL OR a.job.title = :jobTitle)")
-    int findCountByCompanyAndJobTitle(Company company, String jobTitle);
+    int countByCompanyAndJobTitle(Company company, String jobTitle);
 
     @Modifying
     @Transactional
