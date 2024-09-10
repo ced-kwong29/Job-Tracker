@@ -39,12 +39,20 @@ public interface ApplicationRepository extends JpaRepository<Application, Long>{
                     "(:jobTitle IS NULL OR a.job.title = :jobTitle)")
     int countByCompanyAndJobTitle(Company company, String jobTitle);
 
+//    @Modifying
+//    @Transactional
+//    @Query("Update Application a " +
+//            "SET a.job = CASE WHEN :job IS NOT NULL THEN :job ELSE a.job END, " +
+//                "a.date = COALESCE(:date, a.date), " +
+//                "a.status = COALESCE(:status, a.status) " +
+//            "WHERE a.id = :id")
+//    void update(Long id, Job job, LocalDate date, Status status);
+
     @Modifying
     @Transactional
     @Query("Update Application a " +
-            "SET a.job = COALESCE(:job, a.job), " +
-                "a.date = COALESCE(:date, a.date), " +
-                "a.status = COALESCE(:status, a.status) " +
+            "SET a.date = COALESCE(:date, a.date), " +
+            "a.status = COALESCE(:status, a.status) " +
             "WHERE a.id = :id")
-    void update(Long id, Job job, LocalDate date, Status status);
+    void update(Long id, LocalDate date, Status status);
 }
