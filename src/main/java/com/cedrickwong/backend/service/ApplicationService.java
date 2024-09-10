@@ -49,16 +49,29 @@ public class ApplicationService {
         applicationRepository.delete(application);
     }
 
-    public void update(Application application, Job job, LocalDate date, Status status) {
-        if (job != null) {
-            application.setJob(job);
-        }
-        if (date != null) {
-            application.setDate(date);
-        }
-        if (status != null) {
-            application.setStatus(status);
-        }
-        applicationRepository.update(application.getId(), job, date, status);
+//    public void update(Application application, Job job, LocalDate date, Status status) {
+//        if (job != null) {
+//            application.setJob(job);
+//        }
+//        if (date != null) {
+//            application.setDate(date);
+//        }
+//        if (status != null) {
+//            application.setStatus(status);
+//        }
+//        applicationRepository.update(application.getId(), job, date, status);
+//    }
+public void update(Application application, Job job, LocalDate date, Status status) {
+    if (job != null) {
+        application.setJob(job);
+        applicationRepository.save(application);
     }
+    if (date != null) {
+        application.setDate(date);
+    }
+    if (status != null) {
+        application.setStatus(status);
+    }
+    applicationRepository.update(application.getId(), date, status);
+}
 }

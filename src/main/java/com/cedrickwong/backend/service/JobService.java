@@ -48,18 +48,18 @@ public class JobService {
         jobRepository.delete(job);
     }
 
-    public void update(Job job, Company company, Type type, String title) {
-        if (company != null) {
-            job.setCompany(company);
-        }
-        if (title != null) {
-            job.setTitle(title);
-        }
-        if (type != null) {
-            job.setType(type);
-        }
-        jobRepository.update(job.getId(), company, title, type);
-    }
+//    public void update(Job job, Company company, Type type, String title) {
+//        if (company != null) {
+//            job.setCompany(company);
+//        }
+//        if (title != null) {
+//            job.setTitle(title);
+//        }
+//        if (type != null) {
+//            job.setType(type);
+//        }
+//        jobRepository.update(job.getId(), company, title, type);
+//    }
 
     public void deleteAllFromCompany(Company company) {
         jobRepository.deleteAll(jobRepository.findByCompany(company));
