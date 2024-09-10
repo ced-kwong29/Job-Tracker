@@ -37,8 +37,11 @@ public class JobService {
         return jobRepository.findByCompanyTitleType(company, title, type);
     }
 
-    public void save(Job job) {
-        jobRepository.save(job);
+//    public void save(Job job) {
+//        jobRepository.save(job);
+//    }
+    public Job save(Job job) {
+        return jobRepository.save(job);
     }
 
     public void delete(Job job) {

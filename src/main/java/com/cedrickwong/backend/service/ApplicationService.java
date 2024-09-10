@@ -38,7 +38,7 @@ public class ApplicationService {
     }
 
     public int getCountByCompanyAndJobTitle(Company company, String jobTitle) {
-        return applicationRepository.findCountByCompanyAndJobTitle(company, jobTitle);
+        return applicationRepository.countByCompanyAndJobTitle(company, jobTitle);
     }
 
     public void save(Application application) {

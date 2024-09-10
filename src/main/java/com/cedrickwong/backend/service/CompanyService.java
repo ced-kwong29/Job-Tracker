@@ -22,8 +22,12 @@ public class CompanyService {
         return companyRepository.findByName(name);
     }
 
-    public void save(Company company) {
-        companyRepository.save(company);
+//    public void save(Company company) {
+//        companyRepository.save(company);
+//    }
+
+    public Company save(Company company) {
+        return companyRepository.save(company);
     }
 
     public void delete(Company company) {
