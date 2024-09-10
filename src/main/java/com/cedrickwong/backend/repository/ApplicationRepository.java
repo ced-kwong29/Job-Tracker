@@ -2,6 +2,8 @@ package com.cedrickwong.backend.repository;
 
 import com.cedrickwong.backend.model.Application;
 import com.cedrickwong.backend.model.Application.Status;
+import com.cedrickwong.backend.model.Company;
+import com.cedrickwong.backend.model.Job;
 import com.cedrickwong.backend.model.User;
 import com.cedrickwong.backend.model.Job.Type;
 
@@ -15,7 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Repository
-public interface ApplicationRepository extends JpaRepository<Application, Long> {
+public interface ApplicationRepository extends JpaRepository<Application, Long>{
     @Query("SELECT a " +
             "FROM Application a " +
             "WHERE a.user = :user AND " +
@@ -26,10 +28,31 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
                 "(:type IS NULL OR a.job.type = :type)")
     List<Application> findByUser(User user, LocalDate startDate, LocalDate endDate, String companyName, String jobTitle, Status status, Type type);
 
+    @Query("SELECT a " +
+            "FROM Application a " +
+            "WHERE a.job.title = :jobTitle")
+    List<Application> findByJobTitle(String jobTitle);
+
+    @Query("SELECT COUNT(a) " +
+            "FROM Application a " +
+            "WHERE a.job.company = :company AND " +
+                    "(:jobTitle IS NULL OR a.job.title = :jobTitle)")
+    int countByCompanyAndJobTitle(Company company, String jobTitle);
+
+//    @Modifying
+//    @Transactional
+//    @Query("Update Application a " +
+//            "SET a.job = CASE WHEN :job IS NOT NULL THEN :job ELSE a.job END, " +
+//                "a.date = COALESCE(:date, a.date), " +
+//                "a.status = COALESCE(:status, a.status) " +
+//            "WHERE a.id = :id")
+//    void update(Long id, Job job, LocalDate date, Status status);
+
     @Modifying
     @Transactional
     @Query("Update Application a " +
-            "SET a.status = :status " +
+            "SET a.date = COALESCE(:date, a.date), " +
+            "a.status = COALESCE(:status, a.status) " +
             "WHERE a.id = :id")
-    void updateStatus(Long id, Status status);
+    void update(Long id, LocalDate date, Status status);
 }

@@ -17,9 +17,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Modifying
     @Transactional
     @Query("Update User u " +
-            "SET u.email = COALESCE(:email, u.email), " +
-                "u.password = COALESCE(:password, u.password), " +
-                "u.firstName = COALESCE(:firstName, u.firstName), " +
+            "SET u.email = COALESCE(:email, u.email) , " +
+                "u.password = COALESCE(:password, u.password) , " +
+                "u.firstName = COALESCE(:firstName, u.firstName) , " +
                 "u.lastName = COALESCE(:lastName, u.lastName) " +
             "WHERE u.id = :id")
     void update(Long id, String email, String password, String firstName, String lastName);

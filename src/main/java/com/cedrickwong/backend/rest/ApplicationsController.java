@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -44,7 +45,7 @@ public class ApplicationsController extends BaseController {
         return date == null ? defaultValue : LocalDate.parse(date);
     }
 
-    @GetMapping("/apps")
+    @GetMapping("/list")
     public ResponseEntity<JsonObject> getAllFromUser(@RequestParam(required = false) String startDate, @RequestParam(required = false) String endDate, @RequestParam(required = false) Status status, @RequestParam(required = false) Type type, @RequestParam(required = false) String companyName, @RequestParam(required = false) String jobTitle) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
@@ -58,100 +59,115 @@ public class ApplicationsController extends BaseController {
         return super.actionOkResponse("search query", applicationService.getAllByUser(user, parseDateString(startDate, null), parseDateString(endDate, null), companyName, jobTitle, status, type));
     }
 
-    private ResponseEntity<JsonObject> missingOrInvalidApplicationID(Long id) {
-        return super.getErrorResponse(id == null ? "Provide application id" : "Invalid application id: " + id);
+    private ResponseEntity<JsonObject> invalidApplicationID(Long id) {
+        return super.getErrorResponse("Invalid application id: " + id);
     }
 
-    @GetMapping("/app")
-    public ResponseEntity<JsonObject> get(@RequestParam Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<JsonObject> get(@PathVariable Long id) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
             return super.notLoggedInErrorResponse();
-        }
-
-        if (id == null) {
-            return missingOrInvalidApplicationID(null);
         }
 
         Optional<Application> applicationSearch = applicationService.getById(id);
         if (applicationSearch.isEmpty()) {
-            return missingOrInvalidApplicationID(id);
+            return invalidApplicationID(id);
         }
 
         Application application = applicationSearch.get();
-        return user.equals(application.getUser()) ? super.actionOkResponse("search query", application) : missingOrInvalidApplicationID(id);
+        return user.equals(application.getUser()) ? super.actionOkResponse("search query", application) : invalidApplicationID(id);
     }
 
     private Company createCompany(String name) {
-        Company company = new Company(name);
-        companyService.save(company);
-        return company;
+        return companyService.save(new Company(name));
     }
 
     private Job createJob(Company company, String title, Type type) {
-        Job job = new Job(company, title, type);
-        jobService.save(job);
-        return job;
+        return jobService.save(new Job(company, title, type));
     }
 
-    @PostMapping("/app/{action}")
-    public ResponseEntity<JsonObject> action(@PathVariable String action, @RequestParam(required = false) String companyName, @RequestParam(required = false) String jobTitle, @RequestParam(required = false) Type type, @RequestParam(required = false) String date, @RequestParam(required = false) Status status, @RequestParam(required = false) Long id) {
+    private Job findJob(Company company, String jobTitle, Type type) {
+        return jobService.getByCompanyTitleType(company, jobTitle, type)
+                            .orElseGet(() -> createJob(company, jobTitle, type));
+    }
+
+    private Job findCompanyAndJob(String companyName, String jobTitle, Type type) {
+        return companyService.getByName(companyName)
+                                .map(company -> findJob(company, jobTitle, type))
+                                .orElseGet(() -> createJob(createCompany(companyName), jobTitle, type));
+    }
+
+    @PostMapping(path = "/create")
+    public ResponseEntity<JsonObject> create(@RequestParam String companyName, @RequestParam String jobTitle, @RequestParam(required = false) Type type, @RequestParam(required = false) String date, @RequestParam(required = false) Status status) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
             return super.notLoggedInErrorResponse();
         }
 
-        return switch (action) {
-                case "create" -> createApplication(user, companyName, jobTitle, type, date, status);
-                case "delete" -> deleteApplication(id, user);
-                case "update" -> updateApplication(id, user, status);
-                default -> ResponseEntity.badRequest().build();
-        };
-    }
-
-    private ResponseEntity<JsonObject> createApplication(User user, String companyName, String jobTitle, Type type, String date, Status status) {
-        if (companyName == null || companyName.isEmpty() || jobTitle == null || jobTitle.isEmpty()) {
-            return super.getErrorResponse("Provide company name and job title");
+        if (companyName.isEmpty() || jobTitle.isEmpty()) {
+            return super.getErrorResponse("Company name and job title can not be empty strings");
         }
 
-        Job job = companyService.getByName(companyName)
-                                .map(company -> jobService.getFromCompanyByTitle(company, jobTitle)
-                                                        .orElseGet(() -> createJob(company, jobTitle, type)))
-                                .orElseGet(() -> createJob(createCompany(companyName), jobTitle, type));
-
-        Application application = new Application(user, job, parseDateString(date, LocalDate.now()), status == null ? Status.WAITING : status);
+        Application application = new Application(user, findCompanyAndJob(companyName, jobTitle, Objects.requireNonNullElse(type, Type.UNKNOWN)), parseDateString(date, LocalDate.now()), Objects.requireNonNullElse(status, Status.WAITING));
         applicationService.save(application);
 
         return super.actionOkResponse("creation", application);
     }
 
-    private Optional<Application> checkApplicationIDAndUserCredentials(Long id,  User user) {
+
+    private Optional<Application> checkApplicationIDAndUserCredentials(Long id, User user) {
         return applicationService.getById(id).filter(application -> user.equals(application.getUser()));
     }
 
-    private ResponseEntity<JsonObject> deleteApplication(Long id, User user) {
-        if (id == null) {
-            return missingOrInvalidApplicationID(null);
+    @PostMapping(path = "/{id}/delete")
+    public ResponseEntity<JsonObject> delete(@PathVariable Long id) {
+        User user = (User) httpSession.getAttribute("user");
+        if (user == null) {
+            return super.notLoggedInErrorResponse();
         }
 
         return checkApplicationIDAndUserCredentials(id, user)
                 .map(application -> {
-                    applicationService.delete(application);
-                    return super.actionOkResponse("deletion", application);
+                                        applicationService.delete(application);
+                                        return super.actionOkResponse("deletion", application);
                 })
-                .orElseGet(() -> missingOrInvalidApplicationID(id));
+                .orElseGet(() -> invalidApplicationID(id));
     }
 
-    private ResponseEntity<JsonObject> updateApplication(Long id, User user, Status status) {
-        if (id == null || status == null) {
-            return super.getErrorResponse("Provide application id and status");
+//    private Type defaultType(Type type, Type defaultValue) {
+//        return type != null ? type : defaultValue;
+//    }
+
+
+    @PostMapping(path = "/{id}/update")
+    public ResponseEntity<JsonObject> update(@PathVariable Long id, @RequestParam(required = false) String companyName, @RequestParam(required = false) String jobTitle, @RequestParam(required = false) Type type, @RequestParam(required = false) String date, @RequestParam(required = false) Status status) {
+        User user = (User) httpSession.getAttribute("user");
+        if (user == null) {
+            return super.notLoggedInErrorResponse();
         }
 
         return checkApplicationIDAndUserCredentials(id, user)
                 .map(application -> {
-                    applicationService.update(application, status);
-                    return super.actionOkResponse("update", application);
+                                        if (companyName != null && companyName.isEmpty() || jobTitle != null && jobTitle.isEmpty()) {
+                                            return super.getErrorResponse("Company name and job title can not be empty strings");
+                                        }
+
+                                        Job updatedJob, currentJob = application.getJob();
+
+                                        if (jobTitle != null && companyName != null){
+                                            updatedJob = findCompanyAndJob(companyName, jobTitle, Objects.requireNonNullElse(type, currentJob.getType()));
+                                        } else if (jobTitle != null) {
+                                            updatedJob = findCompanyAndJob(currentJob.getCompany().getName(), jobTitle, Objects.requireNonNullElse(type, currentJob.getType()));
+                                        } else if (companyName != null) {
+                                            updatedJob = findCompanyAndJob(companyName, currentJob.getTitle(), Objects.requireNonNullElse(type, currentJob.getType()));
+                                        } else {
+                                            updatedJob = type == null ? null : findCompanyAndJob(currentJob.getCompany().getName(), currentJob.getTitle(), type);
+                                        }
+
+                                        applicationService.update(application, updatedJob, parseDateString(date, null), status);
+                                        return super.actionOkResponse("update", application);
                 })
-                .orElseGet(() -> missingOrInvalidApplicationID(id));
+                .orElseGet(() -> invalidApplicationID(id));
     }
 }

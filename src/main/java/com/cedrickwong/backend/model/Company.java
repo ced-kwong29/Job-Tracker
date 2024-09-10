@@ -7,6 +7,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 
+import java.util.Objects;
+
 @Entity
 @Table(
         name = "companies",
@@ -33,8 +35,25 @@ public class Company {
         return id;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getName() {
         return name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Company company = (Company) o;
+        return Objects.equals(id, company.id) && Objects.equals(name, company.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name);
     }
 
     @Override

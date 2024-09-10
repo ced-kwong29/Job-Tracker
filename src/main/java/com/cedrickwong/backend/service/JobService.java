@@ -2,6 +2,7 @@ package com.cedrickwong.backend.service;
 
 import com.cedrickwong.backend.model.Company;
 import com.cedrickwong.backend.model.Job;
+import com.cedrickwong.backend.model.Job.Type;
 import com.cedrickwong.backend.repository.JobRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,17 +33,33 @@ public class JobService {
         return jobRepository.findByCompany(company);
     }
 
-    public Optional<Job> getFromCompanyByTitle(Company company, String title) {
-        return jobRepository.findByCompanyAndTitle(company, title);
+    public Optional<Job> getByCompanyTitleType(Company company, String title, Type type) {
+        return jobRepository.findByCompanyTitleType(company, title, type);
     }
 
-    public void save(Job job) {
-        jobRepository.save(job);
+//    public void save(Job job) {
+//        jobRepository.save(job);
+//    }
+    public Job save(Job job) {
+        return jobRepository.save(job);
     }
 
     public void delete(Job job) {
         jobRepository.delete(job);
     }
+
+//    public void update(Job job, Company company, Type type, String title) {
+//        if (company != null) {
+//            job.setCompany(company);
+//        }
+//        if (title != null) {
+//            job.setTitle(title);
+//        }
+//        if (type != null) {
+//            job.setType(type);
+//        }
+//        jobRepository.update(job.getId(), company, title, type);
+//    }
 
     public void deleteAllFromCompany(Company company) {
         jobRepository.deleteAll(jobRepository.findByCompany(company));

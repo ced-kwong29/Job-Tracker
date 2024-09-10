@@ -2,6 +2,8 @@ package com.cedrickwong.backend.service;
 
 import com.cedrickwong.backend.model.Application;
 import com.cedrickwong.backend.model.Application.Status;
+import com.cedrickwong.backend.model.Company;
+import com.cedrickwong.backend.model.Job;
 import com.cedrickwong.backend.model.User;
 import com.cedrickwong.backend.model.Job.Type;
 import com.cedrickwong.backend.repository.ApplicationRepository;
@@ -31,6 +33,14 @@ public class ApplicationService {
         return applicationRepository.findByUser(user, startDate, endDate, companyName, jobTitle, status, type);
     }
 
+    public List<Application> getAllByJobTitle(String jobTitle) {
+        return applicationRepository.findByJobTitle(jobTitle);
+    }
+
+    public int getCountByCompanyAndJobTitle(Company company, String jobTitle) {
+        return applicationRepository.countByCompanyAndJobTitle(company, jobTitle);
+    }
+
     public void save(Application application) {
         applicationRepository.save(application);
     }
@@ -39,8 +49,29 @@ public class ApplicationService {
         applicationRepository.delete(application);
     }
 
-    public void update(Application application, Application.Status status) {
-        application.setStatus(status);
-        applicationRepository.updateStatus(application.getId(), status);
+//    public void update(Application application, Job job, LocalDate date, Status status) {
+//        if (job != null) {
+//            application.setJob(job);
+//        }
+//        if (date != null) {
+//            application.setDate(date);
+//        }
+//        if (status != null) {
+//            application.setStatus(status);
+//        }
+//        applicationRepository.update(application.getId(), job, date, status);
+//    }
+public void update(Application application, Job job, LocalDate date, Status status) {
+    if (job != null) {
+        application.setJob(job);
+        applicationRepository.save(application);
     }
+    if (date != null) {
+        application.setDate(date);
+    }
+    if (status != null) {
+        application.setStatus(status);
+    }
+    applicationRepository.update(application.getId(), date, status);
+}
 }
