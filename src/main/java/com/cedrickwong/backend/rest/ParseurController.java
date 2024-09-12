@@ -27,7 +27,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @RestController
 @RequestMapping(path = "/api/parseur")
@@ -53,20 +52,19 @@ public class ParseurController extends BaseController {
         return companyService.save(new Company(name));
     }
 
-    private Job createJob(Company company, String title, Type type) {
-        return jobService.save(new Job(company, title, type));
+    private Job createJob(Company company, String title) {
+        return jobService.save(new Job(company, title, Type.UNKNOWN));
     }
 
-    private Job findJob(Company company, String jobTitle, Type type) {
-        return jobService.getByCompanyTitleType(company, jobTitle, type)
-                         .orElseGet(() -> createJob(company, jobTitle, type));
+    private Job findJob(Company company, String jobTitle) {
+        return jobService.getByCompanyTitleType(company, jobTitle, Type.UNKNOWN)
+                         .orElseGet(() -> createJob(company, jobTitle));
     }
 
-    private Job findCompanyAndJob(String companyName, String jobTitle, Job.Type type) {
-        Type typeValue = Objects.requireNonNullElse(type, Type.UNKNOWN);
+    private Job findCompanyAndJob(String companyName, String jobTitle) {
         return companyService.getByName(companyName)
-                             .map(company -> findJob(company, jobTitle, typeValue))
-                             .orElseGet(() -> createJob(createCompany(companyName), jobTitle, typeValue));
+                             .map(company -> findJob(company, jobTitle))
+                             .orElseGet(() -> createJob(createCompany(companyName), jobTitle));
     }
 
     private Status processParsedStatus(JsonElement status) {
@@ -112,7 +110,7 @@ public class ParseurController extends BaseController {
                                                                         String jobTitle = jsonObject.get("JobRole").getAsString();
                                                                         String companyName = jsonObject.get("JobCompany").getAsString();
 
-                                                                        Job job = findCompanyAndJob(companyName, jobTitle, null);
+                                                                        Job job = findCompanyAndJob(companyName, jobTitle);
                                                                         Status status = processParsedStatus(jsonObject.get("Status"));
                                                                         LocalDate date = Instant.parse(jsonObject.get("Received").getAsString())
                                                                                                 .atZone(ZoneId.systemDefault())
