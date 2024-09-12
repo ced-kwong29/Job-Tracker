@@ -70,22 +70,6 @@ public class BaseController {
         return getItemizedOkResponse("Successful " + action, itemList);
     }
 
-//    protected <T> ResponseEntity<JsonObject> searchOkResponse(T item) {
-//        return actionOkResponse("search query", item);
-//    }
-
-//    protected <T> ResponseEntity<JsonObject> searchOkResponse(List<T> item) {
-//        return getItemizedOkResponse("Successful search query", item);
-//    }
-
-//    protected ResponseEntity<JsonObject> missingUserCredentialsOkResponse() {
-//        return getOkResponse(false, "Provide email and password");
-//    }
-
-//    protected ResponseEntity<JsonObject> invalidUserCredentialsOkResponse() {
-//        return getOkResponse(false, "Invalid email or password");
-//    }
-
     private JsonObject getErrorJsonObject(String message) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("status", "error");
@@ -100,8 +84,4 @@ public class BaseController {
     protected ResponseEntity<JsonObject> notLoggedInErrorResponse() {
         return getErrorResponse("User not logged in");
     }
-
-//    protected ResponseEntity<JsonObject> invalidUserCredentialsErrorResponse(){
-//        return getErrorResponse("Invalid email or password");
-//    }
 }

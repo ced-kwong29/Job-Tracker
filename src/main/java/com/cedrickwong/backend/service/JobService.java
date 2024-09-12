@@ -37,9 +37,6 @@ public class JobService {
         return jobRepository.findByCompanyTitleType(company, title, type);
     }
 
-//    public void save(Job job) {
-//        jobRepository.save(job);
-//    }
     public Job save(Job job) {
         return jobRepository.save(job);
     }
@@ -47,19 +44,6 @@ public class JobService {
     public void delete(Job job) {
         jobRepository.delete(job);
     }
-
-//    public void update(Job job, Company company, Type type, String title) {
-//        if (company != null) {
-//            job.setCompany(company);
-//        }
-//        if (title != null) {
-//            job.setTitle(title);
-//        }
-//        if (type != null) {
-//            job.setType(type);
-//        }
-//        jobRepository.update(job.getId(), company, title, type);
-//    }
 
     public void deleteAllFromCompany(Company company) {
         jobRepository.deleteAll(jobRepository.findByCompany(company));
