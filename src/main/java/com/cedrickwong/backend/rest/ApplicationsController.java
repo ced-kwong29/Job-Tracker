@@ -89,13 +89,13 @@ public class ApplicationsController extends BaseController {
 
     private Job findJob(Company company, String jobTitle, Type type) {
         return jobService.getByCompanyTitleType(company, jobTitle, type)
-                            .orElseGet(() -> createJob(company, jobTitle, type));
+                         .orElseGet(() -> createJob(company, jobTitle, type));
     }
 
     private Job findCompanyAndJob(String companyName, String jobTitle, Type type) {
         return companyService.getByName(companyName)
-                                .map(company -> findJob(company, jobTitle, type))
-                                .orElseGet(() -> createJob(createCompany(companyName), jobTitle, type));
+                             .map(company -> findJob(company, jobTitle, type))
+                             .orElseGet(() -> createJob(createCompany(companyName), jobTitle, type));
     }
 
     @PostMapping(path = "/create")
@@ -135,11 +135,6 @@ public class ApplicationsController extends BaseController {
                 .orElseGet(() -> invalidApplicationID(id));
     }
 
-//    private Type defaultType(Type type, Type defaultValue) {
-//        return type != null ? type : defaultValue;
-//    }
-
-
     @PostMapping(path = "/{id}/update")
     public ResponseEntity<JsonObject> update(@PathVariable Long id, @RequestParam(required = false) String companyName, @RequestParam(required = false) String jobTitle, @RequestParam(required = false) Type type, @RequestParam(required = false) String date, @RequestParam(required = false) Status status) {
         User user = (User) httpSession.getAttribute("user");
@@ -147,27 +142,26 @@ public class ApplicationsController extends BaseController {
             return super.notLoggedInErrorResponse();
         }
 
-        return checkApplicationIDAndUserCredentials(id, user)
-                .map(application -> {
-                                        if (companyName != null && companyName.isEmpty() || jobTitle != null && jobTitle.isEmpty()) {
-                                            return super.getErrorResponse("Company name and job title can not be empty strings");
-                                        }
+        return checkApplicationIDAndUserCredentials(id, user).map(application -> {
+                                                                                    if (companyName != null && companyName.isEmpty() || jobTitle != null && jobTitle.isEmpty()) {
+                                                                                        return super.getErrorResponse("Company name and job title can not be empty strings");
+                                                                                    }
 
-                                        Job updatedJob, currentJob = application.getJob();
+                                                                                    Job updatedJob, currentJob = application.getJob();
 
-                                        if (jobTitle != null && companyName != null){
-                                            updatedJob = findCompanyAndJob(companyName, jobTitle, Objects.requireNonNullElse(type, currentJob.getType()));
-                                        } else if (jobTitle != null) {
-                                            updatedJob = findCompanyAndJob(currentJob.getCompany().getName(), jobTitle, Objects.requireNonNullElse(type, currentJob.getType()));
-                                        } else if (companyName != null) {
-                                            updatedJob = findCompanyAndJob(companyName, currentJob.getTitle(), Objects.requireNonNullElse(type, currentJob.getType()));
-                                        } else {
-                                            updatedJob = type == null ? null : findCompanyAndJob(currentJob.getCompany().getName(), currentJob.getTitle(), type);
-                                        }
+                                                                                    if (jobTitle != null && companyName != null){
+                                                                                        updatedJob = findCompanyAndJob(companyName, jobTitle, Objects.requireNonNullElse(type, currentJob.getType()));
+                                                                                    } else if (jobTitle != null) {
+                                                                                        updatedJob = findCompanyAndJob(currentJob.getCompany().getName(), jobTitle, Objects.requireNonNullElse(type, currentJob.getType()));
+                                                                                    } else if (companyName != null) {
+                                                                                        updatedJob = findCompanyAndJob(companyName, currentJob.getTitle(), Objects.requireNonNullElse(type, currentJob.getType()));
+                                                                                    } else {
+                                                                                        updatedJob = type == null ? null : findCompanyAndJob(currentJob.getCompany().getName(), currentJob.getTitle(), type);
+                                                                                    }
 
-                                        applicationService.update(application, updatedJob, parseDateString(date, null), status);
-                                        return super.actionOkResponse("update", application);
-                })
-                .orElseGet(() -> invalidApplicationID(id));
+                                                                                    applicationService.update(application, updatedJob, parseDateString(date, null), status);
+                                                                                    return super.actionOkResponse("update", application);
+                                                             })
+                                                             .orElseGet(() -> invalidApplicationID(id));
     }
 }
