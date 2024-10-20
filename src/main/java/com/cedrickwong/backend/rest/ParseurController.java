@@ -103,7 +103,7 @@ public class ParseurController extends BaseController {
                                                                                                                                   .getAsString())
                                                                                                           .getAsJsonObject();
 
-                                                                        if (!(jsonObject.has("JobRole")) && jsonObject.has("JobCompany") && jsonObject.has("Received")) {
+                                                                        if (!(jsonObject.has("JobRole") && jsonObject.has("JobCompany") && jsonObject.has("Received"))) {
                                                                             return;
                                                                         }
 
